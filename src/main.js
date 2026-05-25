@@ -60,7 +60,13 @@ function renderNotes(notes) {
   notes.forEach(note => {
     // Add marker to map
     const marker = L.marker([note.lat, note.lng]).addTo(map);
-    marker.bindPopup(`<b>${note.title}</b><br>${note.rating} ⭐`);
+    marker.bindPopup(`
+      <b>${note.title}</b><br>${note.rating} ⭐<br>
+      <div style="margin-top: 8px; display: flex; gap: 8px;">
+        <a href="https://www.google.com/maps/dir/?api=1&destination=${note.lat},${note.lng}" target="_blank" style="font-size: 0.8rem; text-decoration: none; background: #ea4335; color: white; padding: 4px 8px; border-radius: 4px;">📍 Google Maps</a>
+        <a href="http://maps.apple.com/?daddr=${note.lat},${note.lng}" target="_blank" style="font-size: 0.8rem; text-decoration: none; background: #000; color: white; padding: 4px 8px; border-radius: 4px;">🍎 Apple Maps</a>
+      </div>
+    `);
 
     // Render list item
     const el = document.createElement('div');
@@ -74,10 +80,16 @@ function renderNotes(notes) {
       <div class="note-tags">
         ${note.tags.map(t => `<span class="tag">#${t}</span>`).join('')}
       </div>
+      <div class="action-buttons" style="margin-top: 12px; display: flex; gap: 8px;">
+        <a href="https://www.google.com/maps/dir/?api=1&destination=${note.lat},${note.lng}" target="_blank" class="nav-btn google-btn">📍 Google Maps</a>
+        <a href="http://maps.apple.com/?daddr=${note.lat},${note.lng}" target="_blank" class="nav-btn apple-btn">🍎 Apple Maps</a>
+      </div>
     `;
     
     // Pan to marker on click
-    el.addEventListener('click', () => {
+    el.addEventListener('click', (e) => {
+      // Prevent panning if clicking on the action buttons
+      if (e.target.closest('.nav-btn')) return;
       map.flyTo([note.lat, note.lng], 16);
       marker.openPopup();
     });

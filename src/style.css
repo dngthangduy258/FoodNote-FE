@@ -178,6 +178,33 @@ body {
   filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
 }
 
+/* Navigation Buttons */
+.nav-btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-decoration: none;
+  color: white;
+  transition: opacity 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.nav-btn:hover {
+  opacity: 0.8;
+}
+
+.google-btn {
+  background-color: #ea4335;
+}
+
+.apple-btn {
+  background-color: #000;
+  border: 1px solid #333;
+}
+
 /* Desktop override */
 @media (min-width: 768px) {
   #app {

@@ -306,6 +306,7 @@ function renderNotes(data) {
     el.addEventListener('click', (e) => {
       if (e.target.closest('.nav-btn')) return;
       map.flyTo([note.lat, note.lng], 16);
+      marker.openPopup();
       if (window.innerWidth < 768) {
         sheetExpanded = false;
         bottomSheet.style.transform = 'translateY(calc(100% - 80px))';

@@ -63,8 +63,8 @@ function renderNotes(notes) {
     marker.bindPopup(`
       <b>${note.title}</b><br>${note.rating} ⭐<br>
       <div style="margin-top: 8px; display: flex; gap: 8px;">
-        <a href="https://www.google.com/maps/dir/?api=1&destination=${note.lat},${note.lng}" target="_blank" style="font-size: 0.8rem; text-decoration: none; background: #ea4335; color: white; padding: 4px 8px; border-radius: 4px;">📍 Google Maps</a>
-        <a href="http://maps.apple.com/?daddr=${note.lat},${note.lng}" target="_blank" style="font-size: 0.8rem; text-decoration: none; background: #000; color: white; padding: 4px 8px; border-radius: 4px;">🍎 Apple Maps</a>
+        <a href="https://www.google.com/maps/search/?api=1&query=${note.lat},${note.lng}" target="_blank" style="font-size: 0.8rem; text-decoration: none; background: #ea4335; color: white; padding: 4px 8px; border-radius: 4px;">📍 Google Maps</a>
+        <a href="http://maps.apple.com/?ll=${note.lat},${note.lng}&q=${note.title}" target="_blank" style="font-size: 0.8rem; text-decoration: none; background: #000; color: white; padding: 4px 8px; border-radius: 4px;">🍎 Apple Maps</a>
       </div>
     `);
 
@@ -81,8 +81,8 @@ function renderNotes(notes) {
         ${note.tags.map(t => `<span class="tag">#${t}</span>`).join('')}
       </div>
       <div class="action-buttons" style="margin-top: 12px; display: flex; gap: 8px;">
-        <a href="https://www.google.com/maps/dir/?api=1&destination=${note.lat},${note.lng}" target="_blank" class="nav-btn google-btn">📍 Google Maps</a>
-        <a href="http://maps.apple.com/?daddr=${note.lat},${note.lng}" target="_blank" class="nav-btn apple-btn">🍎 Apple Maps</a>
+        <a href="https://www.google.com/maps/search/?api=1&query=${note.lat},${note.lng}" target="_blank" class="nav-btn google-btn">📍 Google Maps</a>
+        <a href="http://maps.apple.com/?ll=${note.lat},${note.lng}&q=${note.title}" target="_blank" class="nav-btn apple-btn">🍎 Apple Maps</a>
       </div>
     `;
     

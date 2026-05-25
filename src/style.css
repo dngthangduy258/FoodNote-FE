@@ -170,13 +170,7 @@ body {
   transform: scale(0.95);
 }
 
-/* Leaflet Customizations for Dark Mode */
-.leaflet-layer,
-.leaflet-control-zoom-in,
-.leaflet-control-zoom-out,
-.leaflet-control-attribution {
-  filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
-}
+/* Removed dark mode filter for map per user request so it is bright and natural */
 
 /* Navigation Buttons */
 .nav-btn {

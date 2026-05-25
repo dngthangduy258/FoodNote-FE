@@ -185,7 +185,7 @@ if (searchInput) {
 document.getElementById('btn-close-login').addEventListener('click', () => {
   modalOverlay.classList.add('hidden');
 });
-document.getElementById('btn-close-add').addEventListener('click', () => {
+document.getElementById('btn-cancel-note').addEventListener('click', () => {
   modalOverlay.classList.add('hidden');
 });
 

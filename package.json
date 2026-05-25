@@ -14,7 +14,7 @@
   "dependencies": {
     "@cloudflare/workers-types": "^4.20260524.1",
     "axios": "^1.16.1",
-    "firebase": "^10.12.2",
+    "firebase": "^10.14.1",
     "leaflet": "^1.9.4"
   }
 }

@@ -113,18 +113,44 @@ async function loadNotes() {
   }
 }
 
+// Initialize Firebase
+import { initializeApp } from "firebase/app";
+import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBU5AKtgxqaj5CUDT7mQ8s4_8eCfnbxabE",
+  authDomain: "foodnote-5b521.firebaseapp.com",
+  projectId: "foodnote-5b521",
+  storageBucket: "foodnote-5b521.firebasestorage.app",
+  messagingSenderId: "195555300449",
+  appId: "1:195555300449:web:84362193ab248753e7c620"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const googleProvider = new GoogleAuthProvider();
+
 // UI Interaction Logic for Modals
 const modalOverlay = document.getElementById('modal-overlay');
 const addNoteModal = document.getElementById('add-note-modal');
 const loginModal = document.getElementById('login-modal');
 
+// Check Login Status on Page Load
+let currentUser = null;
+auth.onAuthStateChanged((user) => {
+  if (user) {
+    currentUser = user;
+    localStorage.setItem('foodnote_user', user.uid);
+  } else {
+    currentUser = null;
+    localStorage.removeItem('foodnote_user');
+  }
+});
+
 // Add button listener - check login, then open modal
 document.getElementById('add-btn').addEventListener('click', () => {
-  // Mock check if user is logged in
-  const isLoggedIn = localStorage.getItem('foodnote_user');
-  
   modalOverlay.classList.remove('hidden');
-  if (!isLoggedIn) {
+  if (!currentUser) {
     loginModal.classList.remove('hidden');
     addNoteModal.classList.add('hidden');
   } else {
@@ -144,19 +170,33 @@ document.getElementById('btn-close-add').addEventListener('click', () => {
   addNoteModal.classList.add('hidden');
 });
 
-// Mock Login Handlers
-document.getElementById('btn-login-google').addEventListener('click', () => {
-  alert('Đang kết nối Google Auth... (Chưa cấu hình Firebase API Key)');
-  localStorage.setItem('foodnote_user', 'google_user_123');
-  loginModal.classList.add('hidden');
-  addNoteModal.classList.remove('hidden');
+// Google Login Handler
+document.getElementById('btn-login-google').addEventListener('click', async () => {
+  try {
+    const result = await signInWithPopup(auth, googleProvider);
+    currentUser = result.user;
+    
+    // Sync to backend (optional, will fail silently if backend is not running)
+    try {
+      await axios.post(`${API_BASE}/auth/sync`, {
+        email: currentUser.email,
+        name: currentUser.displayName,
+        avatarUrl: currentUser.photoURL
+      });
+    } catch(e) { console.log('Backend sync skipped'); }
+    
+    alert(`Đăng nhập thành công! Xin chào ${currentUser.displayName}`);
+    loginModal.classList.add('hidden');
+    addNoteModal.classList.remove('hidden');
+  } catch (error) {
+    console.error("Lỗi đăng nhập Google:", error);
+    alert("Đăng nhập thất bại: " + error.message);
+  }
 });
 
+// Facebook Mock (Disabled for now)
 document.getElementById('btn-login-facebook').addEventListener('click', () => {
-  alert('Đang kết nối Facebook Auth... (Chưa cấu hình Firebase API Key)');
-  localStorage.setItem('foodnote_user', 'fb_user_123');
-  loginModal.classList.add('hidden');
-  addNoteModal.classList.remove('hidden');
+  alert('Đăng nhập Facebook đang được bảo trì!');
 });
 
 // Submit Note Handler

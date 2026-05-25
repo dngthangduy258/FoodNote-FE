@@ -66,11 +66,18 @@ auth.onAuthStateChanged(async (user) => {
     // Auto sync user to ensure Foreign Key constraints don't fail
     try {
       await axios.post(`${API_BASE}/auth/sync`, {
+        uid: user.uid,
         email: user.email,
         name: user.displayName,
         avatarUrl: user.photoURL
       });
     } catch(e) {}
+    
+    // Update avatar image
+    const avatarDiv = document.getElementById('user-avatar');
+    if (user.photoURL) {
+      avatarDiv.innerHTML = `<img src="${user.photoURL}" alt="avatar">`;
+    }
   } else {
     currentUser = null;
     localStorage.removeItem('foodnote_user');
@@ -144,6 +151,7 @@ document.getElementById('btn-login-google').addEventListener('click', async () =
     
     try {
       await axios.post(`${API_BASE}/auth/sync`, {
+        uid: currentUser.uid,
         email: currentUser.email,
         name: currentUser.displayName,
         avatarUrl: currentUser.photoURL
@@ -153,8 +161,28 @@ document.getElementById('btn-login-google').addEventListener('click', async () =
     showToast(`Xin chào ${currentUser.displayName}`);
     loginModal.classList.add('hidden');
     addNoteModal.classList.remove('hidden');
+    
+    // Update avatar image
+    const avatarDiv = document.getElementById('user-avatar');
+    if (currentUser.photoURL) {
+      avatarDiv.innerHTML = `<img src="${currentUser.photoURL}" alt="avatar">`;
+    }
   } catch (error) {
     showToast("Đăng nhập thất bại");
+  }
+});
+
+// Logout Feature
+document.getElementById('user-avatar').addEventListener('click', async () => {
+  if (currentUser) {
+    if (confirm("Bạn có muốn đăng xuất và xóa dữ liệu cục bộ không?")) {
+      await auth.signOut();
+      localStorage.removeItem('foodnote_offline_data');
+      localStorage.removeItem('foodnote_user');
+      showToast("Đã đăng xuất và xóa dữ liệu cục bộ");
+      document.getElementById('user-avatar').innerHTML = '👤';
+      renderNotes([]); // Clear map
+    }
   }
 });
 

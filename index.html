@@ -12,6 +12,32 @@
   </head>
   <body>
     <div id="app"></div>
+
+    <!-- Modals Overlay -->
+    <div id="modal-overlay" class="hidden">
+      <!-- Login Modal -->
+      <div id="login-modal" class="modal hidden">
+        <h2>Đăng nhập</h2>
+        <p>Đăng nhập để thêm quán và viết đánh giá</p>
+        <button id="btn-login-google" class="auth-btn google">Đăng nhập bằng Google</button>
+        <button id="btn-login-facebook" class="auth-btn facebook">Đăng nhập bằng Facebook</button>
+        <button id="btn-close-login" class="close-btn">Đóng</button>
+      </div>
+
+      <!-- Add Note Modal -->
+      <div id="add-note-modal" class="modal hidden">
+        <h2>Thêm quán / Đánh giá</h2>
+        <input type="text" id="add-title" placeholder="Tên quán" class="input-field" />
+        <textarea id="add-desc" placeholder="Mô tả / Đánh giá của bạn..." class="input-field"></textarea>
+        <select id="add-privacy" class="input-field">
+          <option value="public">Công khai (Public)</option>
+          <option value="private">Chỉ mình tôi (Private)</option>
+        </select>
+        <button id="btn-submit-note" class="primary-btn">Lưu địa điểm</button>
+        <button id="btn-close-add" class="close-btn">Hủy</button>
+      </div>
+    </div>
+
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>

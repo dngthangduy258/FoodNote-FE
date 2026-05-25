@@ -113,9 +113,87 @@ async function loadNotes() {
   }
 }
 
-// Add button listener
+// UI Interaction Logic for Modals
+const modalOverlay = document.getElementById('modal-overlay');
+const addNoteModal = document.getElementById('add-note-modal');
+const loginModal = document.getElementById('login-modal');
+
+// Add button listener - check login, then open modal
 document.getElementById('add-btn').addEventListener('click', () => {
-  alert("Tính năng thêm địa điểm mới đang được phát triển!");
+  // Mock check if user is logged in
+  const isLoggedIn = localStorage.getItem('foodnote_user');
+  
+  modalOverlay.classList.remove('hidden');
+  if (!isLoggedIn) {
+    loginModal.classList.remove('hidden');
+    addNoteModal.classList.add('hidden');
+  } else {
+    loginModal.classList.add('hidden');
+    addNoteModal.classList.remove('hidden');
+  }
+});
+
+// Close buttons
+document.getElementById('btn-close-login').addEventListener('click', () => {
+  modalOverlay.classList.add('hidden');
+  loginModal.classList.add('hidden');
+});
+
+document.getElementById('btn-close-add').addEventListener('click', () => {
+  modalOverlay.classList.add('hidden');
+  addNoteModal.classList.add('hidden');
+});
+
+// Mock Login Handlers
+document.getElementById('btn-login-google').addEventListener('click', () => {
+  alert('Đang kết nối Google Auth... (Chưa cấu hình Firebase API Key)');
+  localStorage.setItem('foodnote_user', 'google_user_123');
+  loginModal.classList.add('hidden');
+  addNoteModal.classList.remove('hidden');
+});
+
+document.getElementById('btn-login-facebook').addEventListener('click', () => {
+  alert('Đang kết nối Facebook Auth... (Chưa cấu hình Firebase API Key)');
+  localStorage.setItem('foodnote_user', 'fb_user_123');
+  loginModal.classList.add('hidden');
+  addNoteModal.classList.remove('hidden');
+});
+
+// Submit Note Handler
+document.getElementById('btn-submit-note').addEventListener('click', async () => {
+  const title = document.getElementById('add-title').value;
+  const desc = document.getElementById('add-desc').value;
+  const privacy = document.getElementById('add-privacy').value;
+  
+  if (!title || !desc) {
+    alert("Vui lòng điền đủ thông tin!");
+    return;
+  }
+  
+  const mapCenter = map.getCenter();
+  
+  const payload = {
+    title: title,
+    description: desc,
+    isPublic: privacy === 'public',
+    lat: mapCenter.lat,
+    lng: mapCenter.lng,
+    userId: localStorage.getItem('foodnote_user'),
+    rating: 5 // Default for now
+  };
+  
+  try {
+    const res = await axios.post(`${API_BASE}/notes`, payload);
+    alert(res.data.message || "Đã lưu thành công!");
+    modalOverlay.classList.add('hidden');
+    addNoteModal.classList.add('hidden');
+    loadNotes(); // Reload
+  } catch (err) {
+    console.warn("Backend error, simulating success for demo", err);
+    alert("Hệ thống ghi nhận: " + title + " (Lưu ý: Backend chưa chạy nên chỉ giả lập)");
+    modalOverlay.classList.add('hidden');
+    addNoteModal.classList.add('hidden');
+  }
 });
 
 // Initial load

@@ -170,6 +170,85 @@ body {
   transform: scale(0.95);
 }
 
+/* Modals */
+.hidden {
+  display: none !important;
+}
+
+#modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  width: 90%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+}
+
+.input-field {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: rgba(0,0,0,0.2);
+  color: white;
+  font-family: inherit;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.auth-btn, .primary-btn, .close-btn {
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.2s;
+}
+
+.auth-btn:hover, .primary-btn:hover, .close-btn:hover {
+  opacity: 0.8;
+}
+
+.primary-btn {
+  background: var(--primary);
+  color: white;
+}
+
+.google {
+  background: white;
+  color: #333;
+}
+
+.facebook {
+  background: #1877f2;
+  color: white;
+}
+
+.close-btn {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
 /* Removed dark mode filter for map per user request so it is bright and natural */
 
 /* Navigation Buttons */

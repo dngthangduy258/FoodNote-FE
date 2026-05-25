@@ -48,13 +48,20 @@
     <div id="bottom-sheet" class="bottom-sheet">
       <div class="sheet-handle"></div>
       <div class="sheet-content">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-          <h2 class="sheet-title" style="margin-bottom: 0;">Khám phá xung quanh</h2>
-          <label class="toggle-label" style="width: auto; gap: 8px; font-size: 0.85rem; color: #5f6368; font-weight: normal;">
-            Chỉ của tôi
-            <input type="checkbox" id="toggle-my-notes">
-            <span class="toggle-switch"></span>
-          </label>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px;">
+          <h2 class="sheet-title" style="margin-bottom: 0;">Khám phá</h2>
+          <div style="display: flex; gap: 12px; align-items: center;">
+            <label class="toggle-label" style="width: auto; gap: 6px; font-size: 0.8rem; color: #5f6368; font-weight: normal;">
+              Bản đồ sạch
+              <input type="checkbox" id="toggle-google-pois">
+              <span class="toggle-switch"></span>
+            </label>
+            <label class="toggle-label" style="width: auto; gap: 6px; font-size: 0.8rem; color: #5f6368; font-weight: normal;">
+              Chỉ của tôi
+              <input type="checkbox" id="toggle-my-notes">
+              <span class="toggle-switch"></span>
+            </label>
+          </div>
         </div>
         <div class="note-list" id="note-list">
           <div class="loading-text">Đang tải dữ liệu...</div>

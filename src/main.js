@@ -23,11 +23,29 @@ const googleProvider = new GoogleAuthProvider();
 const map = L.map('map', { zoomControl: false }).setView([10.762622, 106.660172], 13);
 L.control.zoom({ position: 'topright' }).addTo(map);
 
-// Google Maps Raster Tiles
-L.tileLayer('http://mt0.google.com/vt/lyrs=m&hl=vi&x={x}&y={y}&z={z}', {
+// Google Maps Raster Tiles (Default with POIs)
+const googleMapsLayer = L.tileLayer('http://mt0.google.com/vt/lyrs=m&hl=vi&x={x}&y={y}&z={z}', {
   maxZoom: 20,
   attribution: '© Google Maps'
-}).addTo(map);
+});
+
+// Clean Map (CartoDB Voyager - no POIs)
+const cleanMapsLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+  maxZoom: 20,
+  attribution: '© OpenStreetMap, © CartoDB'
+});
+
+googleMapsLayer.addTo(map);
+
+document.getElementById('toggle-google-pois').addEventListener('change', (e) => {
+  if (e.target.checked) {
+    map.removeLayer(googleMapsLayer);
+    cleanMapsLayer.addTo(map);
+  } else {
+    map.removeLayer(cleanMapsLayer);
+    googleMapsLayer.addTo(map);
+  }
+});
 
 // Custom Toast System
 function showToast(message, duration = 3000) {

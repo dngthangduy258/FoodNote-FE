@@ -58,10 +58,19 @@ let selectedLat = 0;
 let selectedLng = 0;
 
 // Auth State
-auth.onAuthStateChanged((user) => {
+auth.onAuthStateChanged(async (user) => {
   if (user) {
     currentUser = user;
     localStorage.setItem('foodnote_user', user.uid);
+    
+    // Auto sync user to ensure Foreign Key constraints don't fail
+    try {
+      await axios.post(`${API_BASE}/auth/sync`, {
+        email: user.email,
+        name: user.displayName,
+        avatarUrl: user.photoURL
+      });
+    } catch(e) {}
   } else {
     currentUser = null;
     localStorage.removeItem('foodnote_user');

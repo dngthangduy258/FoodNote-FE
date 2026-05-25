@@ -13,6 +13,17 @@
   <body>
     <div id="app"></div>
 
+    <!-- Pin Selector UI (Hidden by default) -->
+    <div id="pin-selector-ui" class="hidden" style="position: absolute; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1000; background: var(--primary); color: white; padding: 12px 24px; border-radius: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); display: flex; flex-direction: column; align-items: center; gap: 8px;">
+      <span style="font-weight: 600; text-align: center;">Kéo rê bản đồ để chọn vị trí quán</span>
+      <button id="btn-confirm-pin" style="background: white; color: var(--primary); border: none; padding: 6px 16px; border-radius: 16px; font-weight: bold; cursor: pointer;">Xác nhận vị trí</button>
+      <button id="btn-cancel-pin" style="background: transparent; color: white; border: 1px solid white; padding: 4px 12px; border-radius: 16px; font-size: 0.8rem; cursor: pointer;">Hủy</button>
+    </div>
+    <!-- Center Crosshair for Pin Selector -->
+    <div id="center-crosshair" class="hidden" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -100%); z-index: 999; pointer-events: none; font-size: 40px; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">
+      📍
+    </div>
+
     <!-- Modals Overlay -->
     <div id="modal-overlay" class="hidden">
       <!-- Login Modal -->
@@ -20,7 +31,6 @@
         <h2>Đăng nhập</h2>
         <p>Đăng nhập để thêm quán và viết đánh giá</p>
         <button id="btn-login-google" class="auth-btn google">Đăng nhập bằng Google</button>
-        <button id="btn-login-facebook" class="auth-btn facebook">Đăng nhập bằng Facebook</button>
         <button id="btn-close-login" class="close-btn">Đóng</button>
       </div>
 
@@ -28,6 +38,7 @@
       <div id="add-note-modal" class="modal hidden">
         <h2>Thêm quán / Đánh giá</h2>
         <input type="text" id="add-title" placeholder="Tên quán" class="input-field" />
+        <input type="text" id="add-address" placeholder="Địa chỉ cụ thể (Không bắt buộc)" class="input-field" />
         <textarea id="add-desc" placeholder="Mô tả / Đánh giá của bạn..." class="input-field"></textarea>
         <select id="add-privacy" class="input-field">
           <option value="public">Công khai (Public)</option>

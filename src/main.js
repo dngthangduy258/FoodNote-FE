@@ -147,16 +147,47 @@ auth.onAuthStateChanged((user) => {
   }
 });
 
-// Add button listener - check login, then open modal
-document.getElementById('add-btn').addEventListener('click', () => {
-  modalOverlay.classList.remove('hidden');
+const pinSelectorUI = document.getElementById('pin-selector-ui');
+const centerCrosshair = document.getElementById('center-crosshair');
+const addBtn = document.getElementById('add-btn');
+let selectedLat = 0;
+let selectedLng = 0;
+
+// Add button listener - check login, then enter "Pin Selector Mode"
+addBtn.addEventListener('click', () => {
   if (!currentUser) {
+    modalOverlay.classList.remove('hidden');
     loginModal.classList.remove('hidden');
     addNoteModal.classList.add('hidden');
   } else {
-    loginModal.classList.add('hidden');
-    addNoteModal.classList.remove('hidden');
+    // Enter Pin Selector Mode
+    pinSelectorUI.classList.remove('hidden');
+    centerCrosshair.classList.remove('hidden');
+    addBtn.classList.add('hidden');
   }
+});
+
+// Pin Selector Actions
+document.getElementById('btn-cancel-pin').addEventListener('click', () => {
+  pinSelectorUI.classList.add('hidden');
+  centerCrosshair.classList.add('hidden');
+  addBtn.classList.remove('hidden');
+});
+
+document.getElementById('btn-confirm-pin').addEventListener('click', () => {
+  // Capture map center coordinates
+  const center = map.getCenter();
+  selectedLat = center.lat;
+  selectedLng = center.lng;
+  
+  // Exit Pin Selector Mode and open Modal
+  pinSelectorUI.classList.add('hidden');
+  centerCrosshair.classList.add('hidden');
+  addBtn.classList.remove('hidden');
+  
+  modalOverlay.classList.remove('hidden');
+  loginModal.classList.add('hidden');
+  addNoteModal.classList.remove('hidden');
 });
 
 // Close buttons
@@ -202,23 +233,23 @@ document.getElementById('btn-login-facebook').addEventListener('click', () => {
 // Submit Note Handler
 document.getElementById('btn-submit-note').addEventListener('click', async () => {
   const title = document.getElementById('add-title').value;
+  const address = document.getElementById('add-address').value;
   const desc = document.getElementById('add-desc').value;
   const privacy = document.getElementById('add-privacy').value;
   
   if (!title || !desc) {
-    alert("Vui lòng điền đủ thông tin!");
+    alert("Vui lòng điền đủ thông tin Tên quán và Đánh giá!");
     return;
   }
-  
-  const mapCenter = map.getCenter();
   
   const payload = {
     title: title,
     description: desc,
     isPublic: privacy === 'public',
-    lat: mapCenter.lat,
-    lng: mapCenter.lng,
-    userId: localStorage.getItem('foodnote_user'),
+    address: address,
+    lat: selectedLat,
+    lng: selectedLng,
+    userId: currentUser.uid,
     rating: 5 // Default for now
   };
   
@@ -227,6 +258,10 @@ document.getElementById('btn-submit-note').addEventListener('click', async () =>
     alert(res.data.message || "Đã lưu thành công!");
     modalOverlay.classList.add('hidden');
     addNoteModal.classList.add('hidden');
+    // Clear form
+    document.getElementById('add-title').value = '';
+    document.getElementById('add-address').value = '';
+    document.getElementById('add-desc').value = '';
     loadNotes(); // Reload
   } catch (err) {
     console.warn("Backend error, simulating success for demo", err);

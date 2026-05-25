@@ -118,7 +118,7 @@ document.getElementById('btn-cancel-pin').addEventListener('click', () => {
   }
 });
 
-document.getElementById('btn-confirm-pin').addEventListener('click', () => {
+document.getElementById('btn-confirm-pin').addEventListener('click', async () => {
   const center = map.getCenter();
   selectedLat = center.lat;
   selectedLng = center.lng;
@@ -133,7 +133,53 @@ document.getElementById('btn-confirm-pin').addEventListener('click', () => {
   modalOverlay.classList.remove('hidden');
   loginModal.classList.add('hidden');
   addNoteModal.classList.remove('hidden');
+  
+  // Auto-fill address via Nominatim Reverse Geocoding
+  document.getElementById('add-address').value = 'Đang tự động lấy địa chỉ...';
+  try {
+    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${selectedLat}&lon=${selectedLng}`);
+    const data = await res.json();
+    if (data && data.display_name) {
+      document.getElementById('add-address').value = data.display_name;
+    } else {
+      document.getElementById('add-address').value = '';
+    }
+  } catch (err) {
+    document.getElementById('add-address').value = '';
+  }
 });
+
+// Forward Geocoding (Search Box)
+const searchInput = document.getElementById('search-input');
+if (searchInput) {
+  searchInput.addEventListener('keypress', async (e) => {
+    if (e.key === 'Enter') {
+      const query = searchInput.value;
+      if (!query) return;
+      try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=vn`);
+        const data = await res.json();
+        if (data && data.length > 0) {
+          const { lat, lon } = data[0];
+          map.flyTo([lat, lon], 16);
+          // Auto trigger pin selector mode if logged in, for convenience
+          if (currentUser) {
+            pinSelectorUI.classList.remove('hidden');
+            centerCrosshair.classList.remove('hidden');
+            addBtn.classList.add('hidden');
+            if (window.innerWidth < 768) {
+              bottomSheet.style.transform = 'translateY(100%)';
+            }
+          }
+        } else {
+          showToast("Không tìm thấy địa điểm này!");
+        }
+      } catch (err) {
+        showToast("Lỗi tìm kiếm");
+      }
+    }
+  });
+}
 
 // Close Modals
 document.getElementById('btn-close-login').addEventListener('click', () => {

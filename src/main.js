@@ -278,6 +278,16 @@ function renderNotes(data) {
   notesToRender.forEach(note => {
     const marker = L.marker([note.lat, note.lng]).addTo(map);
     
+    // Add popup to marker
+    const popupContent = `
+      <div style="font-family: 'Inter', sans-serif; min-width: 150px; text-align: left;">
+        <h4 style="margin: 0 0 4px 0; color: #1a73e8; font-size: 14px; font-weight: 600;">${note.title}</h4>
+        ${note.address ? `<p style="margin: 0 0 6px 0; font-size: 11px; color: #5f6368;">📍 ${note.address}</p>` : ''}
+        <div style="font-size: 12px; font-weight: 500; color: #fbbc04;">⭐ ${note.rating?.toFixed(1) || '5.0'}</div>
+      </div>
+    `;
+    marker.bindPopup(popupContent);
+    
     const el = document.createElement('div');
     el.className = 'note-card';
     el.innerHTML = `

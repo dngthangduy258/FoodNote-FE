@@ -286,6 +286,7 @@ function renderNotes(data) {
         <div class="note-rating">⭐ ${note.rating?.toFixed(1) || '5.0'}</div>
       </div>
       <div class="note-desc">${note.description}</div>
+      ${note.imageUrl ? `<img class="note-image" src="${API_BASE.replace('/api', '')}${note.imageUrl}" alt="food image">` : ''}
       <div class="action-buttons">
         <a href="https://www.google.com/maps/search/?api=1&query=${note.lat},${note.lng}" target="_blank" class="nav-btn">📍 Google Maps</a>
         <a href="http://maps.apple.com/?ll=${note.lat},${note.lng}&q=${note.title}" target="_blank" class="nav-btn">🍎 Apple Maps</a>
@@ -322,6 +323,15 @@ async function loadNotes() {
   }
 }
 
+// Image Selection
+let selectedImageFile = null;
+document.getElementById('add-image').addEventListener('change', (e) => {
+  if (e.target.files && e.target.files[0]) {
+    selectedImageFile = e.target.files[0];
+    document.getElementById('upload-text').textContent = "Đã chọn: " + selectedImageFile.name;
+  }
+});
+
 // Submit Note
 document.getElementById('btn-submit-note').addEventListener('click', async () => {
   const title = document.getElementById('add-title').value;
@@ -333,9 +343,28 @@ document.getElementById('btn-submit-note').addEventListener('click', async () =>
     showToast("Vui lòng nhập Tên và Đánh giá");
     return;
   }
+
+  // Upload image to R2 if selected
+  let imageUrl = null;
+  if (selectedImageFile) {
+    document.getElementById('btn-submit-note').textContent = "Đang tải ảnh...";
+    document.getElementById('btn-submit-note').disabled = true;
+    try {
+      const formData = new FormData();
+      formData.append('file', selectedImageFile);
+      const res = await axios.post(`${API_BASE}/upload`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      imageUrl = res.data.url;
+    } catch (e) {
+      showToast("Lỗi tải ảnh lên");
+    }
+    document.getElementById('btn-submit-note').textContent = "Lưu lại";
+    document.getElementById('btn-submit-note').disabled = false;
+  }
   
   const payload = {
-    id: Date.now().toString(), // fake ID for offline
+    id: Date.now().toString(),
     title,
     description: desc,
     address,
@@ -343,17 +372,21 @@ document.getElementById('btn-submit-note').addEventListener('click', async () =>
     lat: selectedLat,
     lng: selectedLng,
     userId: currentUser.uid,
-    rating: 5
+    rating: 5,
+    imageUrl
   };
   
   modalOverlay.classList.add('hidden');
   document.getElementById('add-title').value = '';
   document.getElementById('add-address').value = '';
   document.getElementById('add-desc').value = '';
+  document.getElementById('add-image').value = '';
+  document.getElementById('upload-text').textContent = "Thêm ảnh (Tùy chọn)";
+  selectedImageFile = null;
 
   try {
-    await axios.post(`${API_BASE}/notes`, payload);
-    showToast("Đã lưu địa điểm thành công!");
+    const res = await axios.post(`${API_BASE}/notes`, payload);
+    showToast(res.data.message || "Đã lưu địa điểm thành công!");
     loadNotes();
   } catch (err) {
     showToast("Đã lưu cục bộ (Chờ đồng bộ Backend)");

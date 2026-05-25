@@ -194,8 +194,29 @@ document.getElementById('user-avatar').addEventListener('click', async () => {
   }
 });
 
+let allNotesData = [];
+
+// Toggle My Notes
+document.getElementById('toggle-my-notes').addEventListener('change', (e) => {
+  if (e.target.checked && !currentUser) {
+    showToast("Bạn cần đăng nhập để xem địa điểm của riêng mình!");
+    e.target.checked = false;
+    return;
+  }
+  renderNotes();
+});
+
 // Render Notes
-function renderNotes(notes) {
+function renderNotes(data) {
+  if (data) {
+    allNotesData = data;
+  }
+  
+  const showOnlyMine = document.getElementById('toggle-my-notes').checked;
+  const notesToRender = showOnlyMine 
+    ? allNotesData.filter(note => currentUser && note.userId === currentUser.uid)
+    : allNotesData;
+
   noteList.innerHTML = '';
   
   // Clear existing markers (basic implementation, ideally keep track of layer group)
@@ -203,7 +224,12 @@ function renderNotes(notes) {
     if (layer instanceof L.Marker) map.removeLayer(layer);
   });
 
-  notes.forEach(note => {
+  if (notesToRender.length === 0) {
+    noteList.innerHTML = '<div class="loading-text" style="text-align:center; padding: 20px;">Không có địa điểm nào.</div>';
+    return;
+  }
+
+  notesToRender.forEach(note => {
     const marker = L.marker([note.lat, note.lng]).addTo(map);
     
     const el = document.createElement('div');

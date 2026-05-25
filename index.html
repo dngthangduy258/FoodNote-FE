@@ -48,7 +48,14 @@
     <div id="bottom-sheet" class="bottom-sheet">
       <div class="sheet-handle"></div>
       <div class="sheet-content">
-        <h2 class="sheet-title">Khám phá xung quanh</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <h2 class="sheet-title" style="margin-bottom: 0;">Khám phá xung quanh</h2>
+          <label class="toggle-label" style="width: auto; gap: 8px; font-size: 0.85rem; color: #5f6368; font-weight: normal;">
+            Chỉ của tôi
+            <input type="checkbox" id="toggle-my-notes">
+            <span class="toggle-switch"></span>
+          </label>
+        </div>
         <div class="note-list" id="note-list">
           <div class="loading-text">Đang tải dữ liệu...</div>
         </div>

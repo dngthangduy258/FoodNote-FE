@@ -92,7 +92,7 @@
             <span class="upload-icon">📷</span>
             <span id="upload-text">Thêm ảnh (Tùy chọn)</span>
           </label>
-          <input type="file" id="add-image" accept="image/*" class="hidden" />
+          <input type="file" id="add-image" accept="image/*" multiple class="hidden" />
         </div>
         <div class="form-group row">
           <label class="toggle-label">
@@ -102,8 +102,43 @@
           </label>
         </div>
         <div class="modal-actions">
-          <button id="btn-close-add" class="btn-secondary">Hủy</button>
+          <button id="btn-cancel-note" class="btn-text">Hủy</button>
           <button id="btn-submit-note" class="btn-primary">Lưu lại</button>
+        </div>
+      </div>
+      
+      <!-- Detail Modal -->
+      <div id="detail-modal" class="modal hidden" style="max-height: 85vh; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+          <h2 class="modal-title" id="detail-title" style="margin-bottom:0;"></h2>
+          <button id="btn-close-detail" class="btn-text" style="padding: 4px 8px;">✕</button>
+        </div>
+        <p class="modal-subtitle" id="detail-address"></p>
+        
+        <div id="detail-images" class="image-carousel" style="display:flex; overflow-x:auto; gap:8px; margin-bottom: 16px;"></div>
+        
+        <p id="detail-desc" style="font-size:0.95rem; line-height: 1.5; margin-bottom: 16px;"></p>
+        
+        <div style="border-top: 1px solid var(--border); padding-top: 16px;">
+          <h3 style="font-size: 1.1rem; margin-bottom: 12px;">Đánh giá cộng đồng</h3>
+          <div id="review-list" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px;"></div>
+          
+          <button id="btn-open-review-form" class="btn-secondary" style="width: 100%;">🖊️ Viết đánh giá</button>
+          
+          <div id="add-review-form" class="hidden" style="margin-top: 12px; display: flex; flex-direction: column; gap: 8px;">
+            <textarea id="review-comment" placeholder="Bạn thấy quán này thế nào?" class="input-field textarea"></textarea>
+            
+            <label for="review-image" class="image-upload-label">
+              <span class="upload-icon">📷</span>
+              <span id="review-upload-text">Thêm ảnh</span>
+            </label>
+            <input type="file" id="review-image" accept="image/*" multiple class="hidden" />
+            
+            <div style="display: flex; gap: 8px;">
+              <button id="btn-submit-review" class="btn-primary" style="flex:1;">Gửi đánh giá</button>
+              <button id="btn-cancel-review" class="btn-text">Hủy</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

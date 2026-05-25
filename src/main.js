@@ -288,6 +288,16 @@ function renderNotes(data) {
     `;
     marker.bindPopup(popupContent);
     
+    let imgTag = '';
+    if (note.imageUrl) {
+      try {
+        const urls = JSON.parse(note.imageUrl);
+        if (urls.length > 0) imgTag = `<img class="note-image" src="${API_BASE.replace('/api', '')}${urls[0]}" alt="food image">`;
+      } catch(e) {
+        imgTag = `<img class="note-image" src="${API_BASE.replace('/api', '')}${note.imageUrl}" alt="food image">`;
+      }
+    }
+
     const el = document.createElement('div');
     el.className = 'note-card';
     el.innerHTML = `
@@ -296,21 +306,18 @@ function renderNotes(data) {
         <div class="note-rating">⭐ ${note.rating?.toFixed(1) || '5.0'}</div>
       </div>
       <div class="note-desc">${note.description}</div>
-      ${note.imageUrl ? `<img class="note-image" src="${API_BASE.replace('/api', '')}${note.imageUrl}" alt="food image">` : ''}
+      ${imgTag}
       <div class="action-buttons">
         <a href="https://www.google.com/maps/search/?api=1&query=${note.lat},${note.lng}" target="_blank" class="nav-btn">📍 Google Maps</a>
         <a href="http://maps.apple.com/?ll=${note.lat},${note.lng}&q=${note.title}" target="_blank" class="nav-btn">🍎 Apple Maps</a>
       </div>
     `;
-    
+
     el.addEventListener('click', (e) => {
       if (e.target.closest('.nav-btn')) return;
+      openDetailModal(note);
       map.flyTo([note.lat, note.lng], 16);
       marker.openPopup();
-      if (window.innerWidth < 768) {
-        sheetExpanded = false;
-        bottomSheet.style.transform = 'translateY(calc(100% - 80px))';
-      }
     });
     
     noteList.appendChild(el);
@@ -335,13 +342,34 @@ async function loadNotes() {
 }
 
 // Image Selection
-let selectedImageFile = null;
+let selectedImageFiles = [];
 document.getElementById('add-image').addEventListener('change', (e) => {
-  if (e.target.files && e.target.files[0]) {
-    selectedImageFile = e.target.files[0];
-    document.getElementById('upload-text').textContent = "Đã chọn: " + selectedImageFile.name;
+  if (e.target.files) {
+    selectedImageFiles = Array.from(e.target.files);
+    document.getElementById('upload-text').textContent = `Đã chọn: ${selectedImageFiles.length} ảnh`;
   }
 });
+
+let selectedReviewFiles = [];
+document.getElementById('review-image').addEventListener('change', (e) => {
+  if (e.target.files) {
+    selectedReviewFiles = Array.from(e.target.files);
+    document.getElementById('review-upload-text').textContent = `Đã chọn: ${selectedReviewFiles.length} ảnh`;
+  }
+});
+
+async function uploadFiles(files) {
+  const urls = [];
+  for (const file of files) {
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await axios.post(`${API_BASE}/upload`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    urls.push(res.data.url);
+  }
+  return urls;
+}
 
 // Submit Note
 document.getElementById('btn-submit-note').addEventListener('click', async () => {
@@ -355,18 +383,13 @@ document.getElementById('btn-submit-note').addEventListener('click', async () =>
     return;
   }
 
-  // Upload image to R2 if selected
   let imageUrl = null;
-  if (selectedImageFile) {
+  if (selectedImageFiles.length > 0) {
     document.getElementById('btn-submit-note').textContent = "Đang tải ảnh...";
     document.getElementById('btn-submit-note').disabled = true;
     try {
-      const formData = new FormData();
-      formData.append('file', selectedImageFile);
-      const res = await axios.post(`${API_BASE}/upload`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      imageUrl = res.data.url;
+      const urls = await uploadFiles(selectedImageFiles);
+      imageUrl = JSON.stringify(urls);
     } catch (e) {
       showToast("Lỗi tải ảnh lên");
     }
@@ -393,7 +416,7 @@ document.getElementById('btn-submit-note').addEventListener('click', async () =>
   document.getElementById('add-desc').value = '';
   document.getElementById('add-image').value = '';
   document.getElementById('upload-text').textContent = "Thêm ảnh (Tùy chọn)";
-  selectedImageFile = null;
+  selectedImageFiles = [];
 
   try {
     const res = await axios.post(`${API_BASE}/notes`, payload);
@@ -411,5 +434,127 @@ document.getElementById('btn-submit-note').addEventListener('click', async () =>
   }
 });
 
-// Load
+let currentActiveNoteId = null;
+
+// Submit Review
+document.getElementById('btn-submit-review').addEventListener('click', async () => {
+  if (!currentActiveNoteId || !currentUser) return;
+  const comment = document.getElementById('review-comment').value;
+  if (!comment) return showToast("Vui lòng nhập đánh giá");
+
+  let imageUrl = null;
+  if (selectedReviewFiles.length > 0) {
+    document.getElementById('btn-submit-review').textContent = "Đang tải ảnh...";
+    document.getElementById('btn-submit-review').disabled = true;
+    try {
+      const urls = await uploadFiles(selectedReviewFiles);
+      imageUrl = JSON.stringify(urls);
+    } catch (e) {}
+    document.getElementById('btn-submit-review').textContent = "Gửi đánh giá";
+    document.getElementById('btn-submit-review').disabled = false;
+  }
+
+  try {
+    await axios.post(`${API_BASE}/reviews`, {
+      noteId: currentActiveNoteId,
+      userId: currentUser.uid,
+      comment,
+      imageUrl
+    });
+    showToast("Đã thêm đánh giá!");
+    document.getElementById('review-comment').value = '';
+    document.getElementById('review-image').value = '';
+    document.getElementById('review-upload-text').textContent = "Thêm ảnh";
+    selectedReviewFiles = [];
+    document.getElementById('add-review-form').classList.add('hidden');
+    document.getElementById('btn-open-review-form').classList.remove('hidden');
+    openDetailModal(allNotesData.find(n => n.id === currentActiveNoteId));
+  } catch (e) {
+    showToast("Lỗi thêm đánh giá");
+  }
+});
+
+document.getElementById('btn-open-review-form').addEventListener('click', () => {
+  if (!currentUser) return showToast("Vui lòng đăng nhập để đánh giá");
+  document.getElementById('btn-open-review-form').classList.add('hidden');
+  document.getElementById('add-review-form').classList.remove('hidden');
+});
+
+document.getElementById('btn-cancel-review').addEventListener('click', () => {
+  document.getElementById('btn-open-review-form').classList.remove('hidden');
+  document.getElementById('add-review-form').classList.add('hidden');
+});
+
+document.getElementById('btn-close-detail').addEventListener('click', () => {
+  document.getElementById('detail-modal').classList.add('hidden');
+  modalOverlay.classList.add('hidden');
+  currentActiveNoteId = null;
+});
+
+async function openDetailModal(note) {
+  currentActiveNoteId = note.id;
+  document.getElementById('detail-title').textContent = note.title;
+  document.getElementById('detail-address').textContent = note.address || '';
+  document.getElementById('detail-desc').textContent = note.description;
+  
+  const imagesContainer = document.getElementById('detail-images');
+  imagesContainer.innerHTML = '';
+  if (note.imageUrl) {
+    try {
+      const urls = JSON.parse(note.imageUrl);
+      urls.forEach(url => {
+        imagesContainer.innerHTML += `<img class="carousel-image" src="${API_BASE.replace('/api', '')}${url}">`;
+      });
+    } catch(e) {
+      // old format
+      imagesContainer.innerHTML = `<img class="carousel-image" src="${API_BASE.replace('/api', '')}${note.imageUrl}">`;
+    }
+  }
+
+  modalOverlay.classList.remove('hidden');
+  loginModal.classList.add('hidden');
+  addNoteModal.classList.add('hidden');
+  document.getElementById('detail-modal').classList.remove('hidden');
+  
+  document.getElementById('add-review-form').classList.add('hidden');
+  document.getElementById('btn-open-review-form').classList.remove('hidden');
+
+  // Load reviews
+  const reviewList = document.getElementById('review-list');
+  reviewList.innerHTML = '<div class="loading-text">Đang tải đánh giá...</div>';
+  try {
+    const res = await axios.get(`${API_BASE}/notes/${note.id}/reviews`);
+    const reviews = res.data;
+    if (reviews.length === 0) {
+      reviewList.innerHTML = '<div class="loading-text" style="text-align:left; padding: 10px 0;">Chưa có đánh giá nào. Hãy là người đầu tiên!</div>';
+    } else {
+      reviewList.innerHTML = reviews.map(r => {
+        let imgs = '';
+        if (r.imageUrl) {
+          try {
+            const rUrls = JSON.parse(r.imageUrl);
+            imgs = `<div class="image-carousel" style="display:flex; overflow-x:auto; gap:4px; margin-top:8px;">
+              ${rUrls.map(u => `<img style="height:60px; border-radius:4px; object-fit:cover;" src="${API_BASE.replace('/api', '')}${u}">`).join('')}
+            </div>`;
+          } catch(e) {}
+        }
+        return `
+          <div class="review-card">
+            <div class="review-header">
+              <img class="review-avatar" src="${r.userAvatar || 'https://via.placeholder.com/24'}">
+              <span class="review-name">${r.userName}</span>
+              <span class="review-date">${new Date(r.createdAt).toLocaleDateString()}</span>
+            </div>
+            <div style="font-size:0.9rem; margin-top:4px;">${r.comment}</div>
+            ${imgs}
+          </div>
+        `;
+      }).join('');
+    }
+  } catch (e) {
+    reviewList.innerHTML = '<div class="loading-text">Lỗi tải đánh giá</div>';
+  }
+}
+
+// Load Notes
 loadNotes();

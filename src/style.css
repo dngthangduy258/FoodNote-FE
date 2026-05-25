@@ -547,3 +547,46 @@ input:checked + .toggle-switch:before {
     transform: translateY(20px);
   }
 }
+
+/* New Review UI */
+.image-carousel::-webkit-scrollbar {
+  height: 6px;
+}
+.image-carousel::-webkit-scrollbar-thumb {
+  background-color: #ccc;
+  border-radius: 4px;
+}
+.carousel-image {
+  height: 120px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.review-card {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.review-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.review-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.review-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.review-date {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-left: auto;
+}

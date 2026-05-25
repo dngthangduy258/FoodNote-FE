@@ -160,7 +160,15 @@ document.getElementById('btn-login-google').addEventListener('click', async () =
     
     showToast(`Xin chào ${currentUser.displayName}`);
     loginModal.classList.add('hidden');
-    addNoteModal.classList.remove('hidden');
+    modalOverlay.classList.add('hidden'); // Hide overlay completely
+    
+    // Start pin selection process
+    pinSelectorUI.classList.remove('hidden');
+    centerCrosshair.classList.remove('hidden');
+    addBtn.classList.add('hidden');
+    if (window.innerWidth < 768) {
+      bottomSheet.style.transform = 'translateY(100%)';
+    }
     
     // Update avatar image
     const avatarDiv = document.getElementById('user-avatar');

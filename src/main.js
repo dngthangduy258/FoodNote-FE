@@ -4,7 +4,7 @@ import axios from 'axios';
 import { initializeApp } from "firebase/app";
 import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 
-const API_BASE = 'http://localhost:4000/api';
+const API_BASE = 'https://foodnote-api.nnx-agro.workers.dev/api';
 
 // Firebase Config
 const firebaseConfig = {

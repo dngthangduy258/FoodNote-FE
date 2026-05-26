@@ -524,7 +524,6 @@ document.getElementById('btn-submit-review').addEventListener('click', async () 
   if (!currentActiveNoteId || !currentUser) return;
   const comment = document.getElementById('review-comment').value;
   const reviewRating = parseInt(document.getElementById('review-rating-stars').getAttribute('data-rating')) || 5;
-  if (!comment) return showToast("Vui lòng nhập đánh giá");
 
   let imageUrl = null;
   if (selectedReviewFiles.length > 0) {
@@ -699,16 +698,22 @@ async function openDetailModal(note) {
           deleteReviewBtn = `<button class="btn-text delete-review-btn" data-id="${r.id}" style="color:var(--danger); padding:0; font-size:12px;">Xóa</button>`;
         }
         
+        const starsHtml = '★'.repeat(r.rating || 5) + '☆'.repeat(5 - (r.rating || 5));
+        
         return `
           <div class="review-card">
             <div class="review-header">
               <img class="review-avatar" src="${r.userAvatar || 'https://via.placeholder.com/24'}">
-              <span class="review-name">${r.userName}</span>
-              <span class="review-date">${new Date(r.createdAt).toLocaleDateString()}</span>
-              <div style="flex:1;"></div>
+              <div style="display:flex; flex-direction:column; flex:1;">
+                <div style="display:flex; align-items:center;">
+                  <span class="review-name">${r.userName}</span>
+                  <span style="color:var(--star); margin-left:8px; font-size:0.9rem;">${starsHtml}</span>
+                </div>
+                <span class="review-date">${new Date(r.createdAt).toLocaleDateString()}</span>
+              </div>
               ${deleteReviewBtn}
             </div>
-            <div style="font-size:0.9rem; margin-top:4px;">${r.comment}</div>
+            ${r.comment ? `<div style="font-size:0.9rem; margin-top:4px;">${r.comment}</div>` : ''}
             ${imgs}
           </div>
         `;

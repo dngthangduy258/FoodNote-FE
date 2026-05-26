@@ -20,8 +20,23 @@ const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
 
 // Initialize Leaflet Map (Fullscreen, no zoom controls on mobile)
-const map = L.map('map', { zoomControl: false }).setView([10.762622, 106.660172], 13);
-L.control.zoom({ position: 'topright' }).addTo(map);
+const map = L.map('map', {
+  center: [10.8231, 106.6297],
+  zoom: 13,
+  zoomControl: false // Disable default zoom control to position it better
+});
+
+L.control.zoom({
+  position: 'bottomright'
+}).addTo(map);
+
+// Add marker cluster group
+const markersCluster = L.markerClusterGroup({
+  disableClusteringAtZoom: 17,
+  spiderfyOnMaxZoom: true,
+  showCoverageOnHover: false
+});
+map.addLayer(markersCluster);
 
 // Google Maps Raster Tiles (Default with POIs)
 const googleMapsLayer = L.tileLayer('http://mt0.google.com/vt/lyrs=m&hl=vi&x={x}&y={y}&z={z}', {
@@ -308,44 +323,36 @@ document.getElementById('toggle-my-notes').addEventListener('change', (e) => {
     document.getElementById('detail-modal').classList.add('hidden');
     return;
   }
-  renderNotes();
+  renderNotes(allNotesData);
 });
 
 // Render Notes
-function renderNotes(data) {
-  if (data) {
-    allNotesData = data;
-  }
+function renderNotes(notes = []) {
+  allNotesData = notes;
+  const listEl = document.getElementById('note-list');
+  listEl.innerHTML = '';
+  markersCluster.clearLayers(); // Clear existing clusters
   
   const showOnlyMine = document.getElementById('toggle-my-notes').checked;
   const notesToRender = showOnlyMine 
     ? allNotesData.filter(note => currentUser && note.userId === currentUser.uid)
     : allNotesData;
 
-  noteList.innerHTML = '';
-  
-  // Clear existing markers (basic implementation, ideally keep track of layer group)
-  map.eachLayer((layer) => {
-    if (layer instanceof L.Marker) map.removeLayer(layer);
-  });
-
   if (notesToRender.length === 0) {
-    noteList.innerHTML = '<div class="loading-text" style="text-align:center; padding: 20px;">Không có địa điểm nào.</div>';
+    listEl.innerHTML = '<div class="loading-text" style="text-align:center; padding: 20px;">Không có địa điểm nào.</div>';
     return;
   }
 
   notesToRender.forEach(note => {
-    const marker = L.marker([note.lat, note.lng]).addTo(map);
-    
-    // Add popup to marker
-    const popupContent = `
+    const marker = L.marker([note.lat, note.lng]).bindPopup(`
       <div style="font-family: 'Inter', sans-serif; min-width: 150px; text-align: left;">
         <h4 style="margin: 0 0 4px 0; color: #1a73e8; font-size: 14px; font-weight: 600;">${note.title}</h4>
         ${note.address ? `<p style="margin: 0 0 6px 0; font-size: 11px; color: #5f6368;">📍 ${note.address}</p>` : ''}
         <div style="font-size: 12px; font-weight: 500; color: #fbbc04;">⭐ ${note.rating?.toFixed(1) || '5.0'}</div>
       </div>
-    `;
-    marker.bindPopup(popupContent);
+    `);
+    marker.on('click', () => openDetailModal(note));
+    markersCluster.addLayer(marker); // Add to cluster instead of map
     
     let imgTag = '';
     if (note.imageUrl) {
@@ -379,7 +386,7 @@ function renderNotes(data) {
       marker.openPopup();
     });
     
-    noteList.appendChild(el);
+    listEl.appendChild(el);
   });
 }
 
@@ -620,7 +627,8 @@ async function openDetailModal(note) {
           document.getElementById('detail-modal').classList.add('hidden');
           modalOverlay.classList.add('hidden');
           currentActiveNoteId = null;
-          loadNotes(); // Reload map
+          renderNotes([]); // Clear map
+          loadNotes(); // Reload public notes
         } catch (e) {
           showToast("Lỗi xóa địa điểm");
         }
@@ -737,3 +745,116 @@ async function openDetailModal(note) {
 
 // Load Notes
 loadNotes();
+
+// =======================
+// Bottom Navigation & Feed
+// =======================
+const navItems = document.querySelectorAll('.nav-item');
+navItems.forEach(item => {
+  item.addEventListener('click', (e) => {
+    e.preventDefault();
+    const targetTab = e.currentTarget.getAttribute('data-tab');
+    
+    // Update active class
+    navItems.forEach(nav => nav.classList.remove('active'));
+    e.currentTarget.classList.add('active');
+    
+    // Manage Views
+    document.getElementById('map').style.display = targetTab === 'map' ? 'block' : 'none';
+    document.getElementById('floating-header').style.display = targetTab === 'map' ? 'flex' : 'none';
+    const fabs = document.querySelectorAll('.fab');
+    fabs.forEach(fab => fab.style.display = targetTab === 'map' ? 'flex' : 'none');
+    document.getElementById('bottom-sheet').style.display = targetTab === 'map' ? 'block' : 'none';
+    
+    document.getElementById('feed-view').classList.toggle('hidden', targetTab !== 'feed');
+    document.getElementById('saved-view').classList.toggle('hidden', targetTab !== 'saved');
+    document.getElementById('profile-view').classList.toggle('hidden', targetTab !== 'profile');
+    
+    if (targetTab === 'feed') {
+      loadFeed();
+    }
+  });
+});
+
+async function loadFeed() {
+  const feedList = document.getElementById('feed-list');
+  feedList.innerHTML = '<div class="loading-text">�ang t?i b?ng tin...</div>';
+  try {
+    const res = await axios.get(${API_BASE}/feed);
+    const notes = res.data;
+    if (notes.length === 0) {
+      feedList.innerHTML = '<div style="text-align:center; color:gray; padding:20px;">Chua c� b�i dang n�o.</div>';
+      return;
+    }
+    feedList.innerHTML = notes.map(note => {
+      let imgTag = '';
+      if (note.imageUrl) {
+        try {
+          const urls = JSON.parse(note.imageUrl);
+          if (urls.length > 0) imgTag = <img class="feed-image" src="" alt="food">;
+        } catch(e) {}
+      }
+      return \`n        <div class="feed-card">
+          <div class="feed-header">
+            <img class="feed-avatar" src="" alt="avatar">
+            <div style="display:flex; flex-direction:column;">
+              <span class="feed-name"></span>
+              <span style="font-size:0.8rem; color:var(--text-muted);"></span>
+            </div>
+          </div>
+          <div style="font-weight:bold; font-size:1.1rem; margin-bottom:4px;"></div>
+          <div style="font-size:0.95rem; color:var(--text-color); margin-bottom:8px;"></div>
+          
+          <div class="feed-actions">
+            <button class="feed-action-btn like-btn" data-id="" data-type="note">
+              ?? <span class="like-count"></span>
+            </button>
+            <button class="feed-action-btn" onclick="openDetailModalFromFeed('')">
+              ?? B�nh lu?n
+            </button>
+          </div>
+        </div>
+      \;
+    }).join('');
+    
+    // Attach like events
+    document.querySelectorAll('.like-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        if (!currentUser) {
+          showToast("Vui l�ng dang nh?p d? th�ch");
+          return;
+        }
+        const targetId = e.currentTarget.getAttribute('data-id');
+        const targetType = e.currentTarget.getAttribute('data-type');
+        try {
+          const res = await axios.post(${API_BASE}/likes/toggle, {
+            userId: currentUser.uid, targetType, targetId
+          });
+          const countSpan = e.currentTarget.querySelector('.like-count');
+          let count = parseInt(countSpan.textContent);
+          if (res.data.action === 'liked') countSpan.textContent = count + 1;
+          else countSpan.textContent = count > 0 ? count - 1 : 0;
+        } catch(err) {}
+      });
+    });
+  } catch (err) {
+    feedList.innerHTML = '<div class="loading-text">L?i t?i b?ng tin</div>';
+  }
+}
+
+window.openDetailModalFromFeed = (noteId) => {
+  const note = allNotesData.find(n => n.id === noteId);
+  if (note) openDetailModal(note);
+};
+
+window.searchByTag = (tag) => {
+  if (tag === 'clear') {
+    renderNotes(allNotesData);
+    return;
+  }
+  const filtered = allNotesData.filter(note => {
+    return note.description && note.description.toLowerCase().includes(tag.toLowerCase());
+  });
+  renderNotes(filtered);
+  showToast("T�m th?y  d?a di?m");
+};

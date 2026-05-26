@@ -111,19 +111,26 @@ document.querySelector('.sheet-handle').addEventListener('click', () => {
   }
 });
 
+let pendingAction = null;
+
+function startPinSelector() {
+  pinSelectorUI.classList.remove('hidden');
+  centerCrosshair.classList.remove('hidden');
+  addBtn.classList.add('hidden');
+  if (window.innerWidth < 768) {
+    bottomSheet.style.transform = 'translateY(100%)'; // hide sheet completely
+  }
+}
+
 // Add Flow
 addBtn.addEventListener('click', () => {
   if (!currentUser) {
+    pendingAction = 'addNote';
     modalOverlay.classList.remove('hidden');
     loginModal.classList.remove('hidden');
     addNoteModal.classList.add('hidden');
   } else {
-    pinSelectorUI.classList.remove('hidden');
-    centerCrosshair.classList.remove('hidden');
-    addBtn.classList.add('hidden');
-    if (window.innerWidth < 768) {
-      bottomSheet.style.transform = 'translateY(100%)'; // hide sheet completely
-    }
+    startPinSelector();
   }
 });
 
@@ -209,12 +216,7 @@ if (searchInput) {
           map.flyTo([lat, lon], 16);
           // Auto trigger pin selector mode if logged in, for convenience
           if (currentUser) {
-            pinSelectorUI.classList.remove('hidden');
-            centerCrosshair.classList.remove('hidden');
-            addBtn.classList.add('hidden');
-            if (window.innerWidth < 768) {
-              bottomSheet.style.transform = 'translateY(100%)';
-            }
+            startPinSelector();
           }
         } else {
           showToast("Không tìm thấy địa điểm này!");
@@ -229,6 +231,7 @@ if (searchInput) {
 // Close Modals
 document.getElementById('btn-close-login').addEventListener('click', () => {
   modalOverlay.classList.add('hidden');
+  pendingAction = null;
 });
 document.getElementById('btn-cancel-note').addEventListener('click', () => {
   modalOverlay.classList.add('hidden');
@@ -253,13 +256,13 @@ document.getElementById('btn-login-google').addEventListener('click', async () =
     loginModal.classList.add('hidden');
     modalOverlay.classList.add('hidden'); // Hide overlay completely
     
-    // Start pin selection process
-    pinSelectorUI.classList.remove('hidden');
-    centerCrosshair.classList.remove('hidden');
-    addBtn.classList.add('hidden');
-    if (window.innerWidth < 768) {
-      bottomSheet.style.transform = 'translateY(100%)';
+    if (pendingAction === 'addNote') {
+      startPinSelector();
+    } else if (pendingAction === 'myNotes') {
+      document.getElementById('toggle-my-notes').checked = true;
+      renderNotes();
     }
+    pendingAction = null;
     
     // Update avatar image
     const avatarDiv = document.getElementById('user-avatar');
@@ -271,7 +274,7 @@ document.getElementById('btn-login-google').addEventListener('click', async () =
   }
 });
 
-// Logout Feature
+// Login / Logout Avatar Click
 document.getElementById('user-avatar').addEventListener('click', async () => {
   if (currentUser) {
     if (confirm("Bạn có muốn đăng xuất và xóa dữ liệu cục bộ không?")) {
@@ -280,8 +283,15 @@ document.getElementById('user-avatar').addEventListener('click', async () => {
       localStorage.removeItem('foodnote_user');
       showToast("Đã đăng xuất và xóa dữ liệu cục bộ");
       document.getElementById('user-avatar').innerHTML = '👤';
-      renderNotes([]); // Clear map
+      document.getElementById('toggle-my-notes').checked = false;
+      loadNotes(); // Reload to show public notes
     }
+  } else {
+    pendingAction = null;
+    modalOverlay.classList.remove('hidden');
+    loginModal.classList.remove('hidden');
+    addNoteModal.classList.add('hidden');
+    document.getElementById('detail-modal').classList.add('hidden');
   }
 });
 
@@ -290,8 +300,12 @@ let allNotesData = [];
 // Toggle My Notes
 document.getElementById('toggle-my-notes').addEventListener('change', (e) => {
   if (e.target.checked && !currentUser) {
-    showToast("Bạn cần đăng nhập để xem địa điểm của riêng mình!");
     e.target.checked = false;
+    pendingAction = 'myNotes';
+    modalOverlay.classList.remove('hidden');
+    loginModal.classList.remove('hidden');
+    addNoteModal.classList.add('hidden');
+    document.getElementById('detail-modal').classList.add('hidden');
     return;
   }
   renderNotes();

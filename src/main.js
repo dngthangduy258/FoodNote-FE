@@ -778,12 +778,12 @@ navItems.forEach(item => {
 
 async function loadFeed() {
   const feedList = document.getElementById('feed-list');
-  feedList.innerHTML = '<div class="loading-text">Ðang t?i b?ng tin...</div>';
+  feedList.innerHTML = '<div class="loading-text">ï¿½ang t?i b?ng tin...</div>';
   try {
     const res = await axios.get(${API_BASE}/feed);
     const notes = res.data;
     if (notes.length === 0) {
-      feedList.innerHTML = '<div style="text-align:center; color:gray; padding:20px;">Chua có bài dang nào.</div>';
+      feedList.innerHTML = '<div style="text-align:center; color:gray; padding:20px;">Chua cï¿½ bï¿½i dang nï¿½o.</div>';
       return;
     }
     feedList.innerHTML = notes.map(note => {
@@ -810,7 +810,7 @@ async function loadFeed() {
               ?? <span class="like-count"></span>
             </button>
             <button class="feed-action-btn" onclick="openDetailModalFromFeed('')">
-              ?? Bình lu?n
+              ?? Bï¿½nh lu?n
             </button>
           </div>
         </div>
@@ -821,7 +821,7 @@ async function loadFeed() {
     document.querySelectorAll('.like-btn').forEach(btn => {
       btn.addEventListener('click', async (e) => {
         if (!currentUser) {
-          showToast("Vui lòng dang nh?p d? thích");
+          showToast("Vui lï¿½ng dang nh?p d? thï¿½ch");
           return;
         }
         const targetId = e.currentTarget.getAttribute('data-id');
@@ -856,5 +856,5 @@ window.searchByTag = (tag) => {
     return note.description && note.description.toLowerCase().includes(tag.toLowerCase());
   });
   renderNotes(filtered);
-  showToast("Tìm th?y  d?a di?m");
+  showToast("Tï¿½m th?y  d?a di?m");
 };

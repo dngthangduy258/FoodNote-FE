@@ -1,4 +1,4 @@
-﻿import './style.css';
+import './style.css';
 
 import axios from 'axios';
 import { initializeApp } from "firebase/app";
@@ -23,6 +23,7 @@ const googleProvider = new GoogleAuthProvider();
 const map = L.map('map', {
   center: [10.8231, 106.6297],
   zoom: 13,
+  maxZoom: 19,
   zoomControl: false // Disable default zoom control to position it better
 });
 

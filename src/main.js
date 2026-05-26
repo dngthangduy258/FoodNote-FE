@@ -1,5 +1,5 @@
 import './style.css';
-
+import L from 'leaflet';
 import axios from 'axios';
 import { initializeApp } from "firebase/app";
 import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
@@ -20,35 +20,19 @@ const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
 
 // Initialize Leaflet Map (Fullscreen, no zoom controls on mobile)
-const map = L.map('map', {
-  center: [10.8231, 106.6297],
-  zoom: 13,
-  maxZoom: 19,
-  zoomControl: false // Disable default zoom control to position it better
-});
-
-L.control.zoom({
-  position: 'bottomright'
-}).addTo(map);
-
-// Add marker cluster group
-const markersCluster = L.markerClusterGroup({
-  disableClusteringAtZoom: 17,
-  spiderfyOnMaxZoom: true,
-  showCoverageOnHover: false
-});
-map.addLayer(markersCluster);
+const map = L.map('map', { zoomControl: false }).setView([10.762622, 106.660172], 13);
+L.control.zoom({ position: 'topright' }).addTo(map);
 
 // Google Maps Raster Tiles (Default with POIs)
 const googleMapsLayer = L.tileLayer('http://mt0.google.com/vt/lyrs=m&hl=vi&x={x}&y={y}&z={z}', {
   maxZoom: 20,
-  attribution: 'Â© Google Maps'
+  attribution: '© Google Maps'
 });
 
 // Clean Map (CartoDB Voyager - no POIs)
 const cleanMapsLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
   maxZoom: 20,
-  attribution: 'Â© OpenStreetMap, Â© CartoDB'
+  attribution: '© OpenStreetMap, © CartoDB'
 });
 
 googleMapsLayer.addTo(map);
@@ -164,7 +148,7 @@ const gpsBtn = document.getElementById('gps-btn');
 if (gpsBtn) {
   gpsBtn.addEventListener('click', () => {
     if (navigator.geolocation) {
-      showToast("Äang tÃ¬m vá»‹ trÃ­...");
+      showToast("Đang tìm vị trí...");
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const lat = position.coords.latitude;
@@ -172,16 +156,16 @@ if (gpsBtn) {
           map.flyTo([lat, lng], 16);
           L.popup()
             .setLatLng([lat, lng])
-            .setContent("Báº¡n Ä‘ang á»Ÿ Ä‘Ã¢y")
+            .setContent("Bạn đang ở đây")
             .openOn(map);
         },
         () => {
-          showToast("KhÃ´ng thá»ƒ Ä‘á»‹nh vá»‹. Vui lÃ²ng báº­t GPS.");
+          showToast("Không thể định vị. Vui lòng bật GPS.");
         },
         { enableHighAccuracy: true, timeout: 5000 }
       );
     } else {
-      showToast("TrÃ¬nh duyá»‡t khÃ´ng há»— trá»£ Ä‘á»‹nh vá»‹.");
+      showToast("Trình duyệt không hỗ trợ định vị.");
     }
   });
 }
@@ -203,7 +187,7 @@ document.getElementById('btn-confirm-pin').addEventListener('click', async () =>
   addNoteModal.classList.remove('hidden');
   
   // Auto-fill address via Nominatim Reverse Geocoding
-  document.getElementById('add-address').value = 'Äang tá»± Ä‘á»™ng láº¥y Ä‘á»‹a chá»‰...';
+  document.getElementById('add-address').value = 'Đang tự động lấy địa chỉ...';
   try {
     const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${selectedLat}&lon=${selectedLng}`);
     const data = await res.json();
@@ -235,10 +219,10 @@ if (searchInput) {
             startPinSelector();
           }
         } else {
-          showToast("KhÃ´ng tÃ¬m tháº¥y Ä‘á»‹a Ä‘iá»ƒm nÃ y!");
+          showToast("Không tìm thấy địa điểm này!");
         }
       } catch (err) {
-        showToast("Lá»—i tÃ¬m kiáº¿m");
+        showToast("Lỗi tìm kiếm");
       }
     }
   });
@@ -268,7 +252,7 @@ document.getElementById('btn-login-google').addEventListener('click', async () =
       });
     } catch(e) {}
     
-    showToast(`Xin chÃ o ${currentUser.displayName}`);
+    showToast(`Xin chào ${currentUser.displayName}`);
     loginModal.classList.add('hidden');
     modalOverlay.classList.add('hidden'); // Hide overlay completely
     
@@ -286,19 +270,19 @@ document.getElementById('btn-login-google').addEventListener('click', async () =
       avatarDiv.innerHTML = `<img src="${currentUser.photoURL}" alt="avatar">`;
     }
   } catch (error) {
-    showToast("ÄÄƒng nháº­p tháº¥t báº¡i");
+    showToast("Đăng nhập thất bại");
   }
 });
 
 // Login / Logout Avatar Click
 document.getElementById('user-avatar').addEventListener('click', async () => {
   if (currentUser) {
-    if (confirm("Báº¡n cÃ³ muá»‘n Ä‘Äƒng xuáº¥t vÃ  xÃ³a dá»¯ liá»‡u cá»¥c bá»™ khÃ´ng?")) {
+    if (confirm("Bạn có muốn đăng xuất và xóa dữ liệu cục bộ không?")) {
       await auth.signOut();
       localStorage.removeItem('foodnote_offline_data');
       localStorage.removeItem('foodnote_user');
-      showToast("ÄÃ£ Ä‘Äƒng xuáº¥t vÃ  xÃ³a dá»¯ liá»‡u cá»¥c bá»™");
-      document.getElementById('user-avatar').innerHTML = 'ðŸ‘¤';
+      showToast("Đã đăng xuất và xóa dữ liệu cục bộ");
+      document.getElementById('user-avatar').innerHTML = '👤';
       document.getElementById('toggle-my-notes').checked = false;
       loadNotes(); // Reload to show public notes
     }
@@ -324,36 +308,44 @@ document.getElementById('toggle-my-notes').addEventListener('change', (e) => {
     document.getElementById('detail-modal').classList.add('hidden');
     return;
   }
-  renderNotes(allNotesData);
+  renderNotes();
 });
 
 // Render Notes
-function renderNotes(notes = []) {
-  allNotesData = notes;
-  const listEl = document.getElementById('note-list');
-  listEl.innerHTML = '';
-  markersCluster.clearLayers(); // Clear existing clusters
+function renderNotes(data) {
+  if (data) {
+    allNotesData = data;
+  }
   
   const showOnlyMine = document.getElementById('toggle-my-notes').checked;
   const notesToRender = showOnlyMine 
     ? allNotesData.filter(note => currentUser && note.userId === currentUser.uid)
     : allNotesData;
 
+  noteList.innerHTML = '';
+  
+  // Clear existing markers (basic implementation, ideally keep track of layer group)
+  map.eachLayer((layer) => {
+    if (layer instanceof L.Marker) map.removeLayer(layer);
+  });
+
   if (notesToRender.length === 0) {
-    listEl.innerHTML = '<div class="loading-text" style="text-align:center; padding: 20px;">KhÃ´ng cÃ³ Ä‘á»‹a Ä‘iá»ƒm nÃ o.</div>';
+    noteList.innerHTML = '<div class="loading-text" style="text-align:center; padding: 20px;">Không có địa điểm nào.</div>';
     return;
   }
 
   notesToRender.forEach(note => {
-    const marker = L.marker([note.lat, note.lng]).bindPopup(`
+    const marker = L.marker([note.lat, note.lng]).addTo(map);
+    
+    // Add popup to marker
+    const popupContent = `
       <div style="font-family: 'Inter', sans-serif; min-width: 150px; text-align: left;">
         <h4 style="margin: 0 0 4px 0; color: #1a73e8; font-size: 14px; font-weight: 600;">${note.title}</h4>
-        ${note.address ? `<p style="margin: 0 0 6px 0; font-size: 11px; color: #5f6368;">ðŸ“ ${note.address}</p>` : ''}
-        <div style="font-size: 12px; font-weight: 500; color: #fbbc04;">â­ ${note.rating?.toFixed(1) || '5.0'}</div>
+        ${note.address ? `<p style="margin: 0 0 6px 0; font-size: 11px; color: #5f6368;">📍 ${note.address}</p>` : ''}
+        <div style="font-size: 12px; font-weight: 500; color: #fbbc04;">⭐ ${note.rating?.toFixed(1) || '5.0'}</div>
       </div>
-    `);
-    marker.on('click', () => openDetailModal(note));
-    markersCluster.addLayer(marker); // Add to cluster instead of map
+    `;
+    marker.bindPopup(popupContent);
     
     let imgTag = '';
     if (note.imageUrl) {
@@ -370,13 +362,13 @@ function renderNotes(notes = []) {
     el.innerHTML = `
       <div class="note-header">
         <div class="note-title">${note.title}</div>
-        <div class="note-rating">â­ ${note.rating?.toFixed(1) || '5.0'}</div>
+        <div class="note-rating">⭐ ${note.rating?.toFixed(1) || '5.0'}</div>
       </div>
       <div class="note-desc">${note.description}</div>
       ${imgTag}
       <div class="action-buttons">
-        <a href="https://www.google.com/maps/search/?api=1&query=${note.lat},${note.lng}" target="_blank" class="nav-btn">ðŸ“ Google Maps</a>
-        <a href="http://maps.apple.com/?ll=${note.lat},${note.lng}&q=${note.title}" target="_blank" class="nav-btn">ðŸŽ Apple Maps</a>
+        <a href="https://www.google.com/maps/search/?api=1&query=${note.lat},${note.lng}" target="_blank" class="nav-btn">📍 Google Maps</a>
+        <a href="http://maps.apple.com/?ll=${note.lat},${note.lng}&q=${note.title}" target="_blank" class="nav-btn">🍎 Apple Maps</a>
       </div>
     `;
 
@@ -387,7 +379,7 @@ function renderNotes(notes = []) {
       marker.openPopup();
     });
     
-    listEl.appendChild(el);
+    noteList.appendChild(el);
   });
 }
 
@@ -435,7 +427,7 @@ let selectedImageFiles = [];
 document.getElementById('add-image').addEventListener('change', (e) => {
   if (e.target.files) {
     selectedImageFiles = Array.from(e.target.files);
-    document.getElementById('upload-text').textContent = `ÄÃ£ chá»n: ${selectedImageFiles.length} áº£nh`;
+    document.getElementById('upload-text').textContent = `Đã chọn: ${selectedImageFiles.length} ảnh`;
   }
 });
 
@@ -443,7 +435,7 @@ let selectedReviewFiles = [];
 document.getElementById('review-image').addEventListener('change', (e) => {
   if (e.target.files) {
     selectedReviewFiles = Array.from(e.target.files);
-    document.getElementById('review-upload-text').textContent = `ÄÃ£ chá»n: ${selectedReviewFiles.length} áº£nh`;
+    document.getElementById('review-upload-text').textContent = `Đã chọn: ${selectedReviewFiles.length} ảnh`;
   }
 });
 
@@ -468,21 +460,21 @@ document.getElementById('btn-submit-note').addEventListener('click', async () =>
   const privacy = document.getElementById('add-privacy').checked;
   
   if (!title || !desc) {
-    showToast("Vui lÃ²ng nháº­p TÃªn vÃ  ÄÃ¡nh giÃ¡");
+    showToast("Vui lòng nhập Tên và Đánh giá");
     return;
   }
 
   let imageUrl = null;
   if (selectedImageFiles.length > 0) {
-    document.getElementById('btn-submit-note').textContent = "Äang táº£i áº£nh...";
+    document.getElementById('btn-submit-note').textContent = "Đang tải ảnh...";
     document.getElementById('btn-submit-note').disabled = true;
     try {
       const urls = await uploadFiles(selectedImageFiles);
       imageUrl = JSON.stringify(urls);
     } catch (e) {
-      showToast("Lá»—i táº£i áº£nh lÃªn");
+      showToast("Lỗi tải ảnh lên");
     }
-    document.getElementById('btn-submit-note').textContent = "LÆ°u láº¡i";
+    document.getElementById('btn-submit-note').textContent = "Lưu lại";
     document.getElementById('btn-submit-note').disabled = false;
   }
   
@@ -506,15 +498,15 @@ document.getElementById('btn-submit-note').addEventListener('click', async () =>
   document.getElementById('add-address').value = '';
   document.getElementById('add-desc').value = '';
   document.getElementById('add-image').value = '';
-  document.getElementById('upload-text').textContent = "ThÃªm áº£nh (TÃ¹y chá»n)";
+  document.getElementById('upload-text').textContent = "Thêm ảnh (Tùy chọn)";
   selectedImageFiles = [];
 
   try {
     const res = await axios.post(`${API_BASE}/notes`, payload);
-    showToast(res.data.message || "ÄÃ£ lÆ°u Ä‘á»‹a Ä‘iá»ƒm thÃ nh cÃ´ng!");
+    showToast(res.data.message || "Đã lưu địa điểm thành công!");
     loadNotes();
   } catch (err) {
-    showToast("ÄÃ£ lÆ°u cá»¥c bá»™ (Chá» Ä‘á»“ng bá»™ Backend)");
+    showToast("Đã lưu cục bộ (Chờ đồng bộ Backend)");
     
     // Save to local storage for offline usage
     const localNotes = JSON.parse(localStorage.getItem('foodnote_offline_data') || '[]');
@@ -532,17 +524,17 @@ document.getElementById('btn-submit-review').addEventListener('click', async () 
   if (!currentActiveNoteId || !currentUser) return;
   const comment = document.getElementById('review-comment').value;
   const reviewRating = parseInt(document.getElementById('review-rating-stars').getAttribute('data-rating')) || 5;
-  if (!comment) return showToast("Vui lÃ²ng nháº­p Ä‘Ã¡nh giÃ¡");
+  if (!comment) return showToast("Vui lòng nhập đánh giá");
 
   let imageUrl = null;
   if (selectedReviewFiles.length > 0) {
-    document.getElementById('btn-submit-review').textContent = "Äang táº£i áº£nh...";
+    document.getElementById('btn-submit-review').textContent = "Đang tải ảnh...";
     document.getElementById('btn-submit-review').disabled = true;
     try {
       const urls = await uploadFiles(selectedReviewFiles);
       imageUrl = JSON.stringify(urls);
     } catch (e) {}
-    document.getElementById('btn-submit-review').textContent = "Gá»­i Ä‘Ã¡nh giÃ¡";
+    document.getElementById('btn-submit-review').textContent = "Gửi đánh giá";
     document.getElementById('btn-submit-review').disabled = false;
   }
 
@@ -553,21 +545,21 @@ document.getElementById('btn-submit-review').addEventListener('click', async () 
       comment,
       imageUrl
     });
-    showToast("ÄÃ£ thÃªm Ä‘Ã¡nh giÃ¡!");
+    showToast("Đã thêm đánh giá!");
     document.getElementById('review-comment').value = '';
     document.getElementById('review-image').value = '';
-    document.getElementById('review-upload-text').textContent = "ThÃªm áº£nh";
+    document.getElementById('review-upload-text').textContent = "Thêm ảnh";
     selectedReviewFiles = [];
     document.getElementById('add-review-form').classList.add('hidden');
     document.getElementById('btn-open-review-form').classList.remove('hidden');
     openDetailModal(allNotesData.find(n => n.id === currentActiveNoteId));
   } catch (e) {
-    showToast("Lá»—i thÃªm Ä‘Ã¡nh giÃ¡");
+    showToast("Lỗi thêm đánh giá");
   }
 });
 
 document.getElementById('btn-open-review-form').addEventListener('click', () => {
-  if (!currentUser) return showToast("Vui lÃ²ng Ä‘Äƒng nháº­p Ä‘á»ƒ Ä‘Ã¡nh giÃ¡");
+  if (!currentUser) return showToast("Vui lòng đăng nhập để đánh giá");
   document.getElementById('btn-open-review-form').classList.add('hidden');
   document.getElementById('add-review-form').classList.remove('hidden');
 });
@@ -621,17 +613,16 @@ async function openDetailModal(note) {
     
     // Delete Handle
     btnDelete.onclick = async () => {
-      if (confirm("Báº¡n cÃ³ cháº¯c cháº¯n muá»‘n xÃ³a Ä‘á»‹a Ä‘iá»ƒm nÃ y?")) {
+      if (confirm("Bạn có chắc chắn muốn xóa địa điểm này?")) {
         try {
           await axios.delete(`${API_BASE}/notes/${note.id}`);
-          showToast("ÄÃ£ xÃ³a Ä‘á»‹a Ä‘iá»ƒm");
+          showToast("Đã xóa địa điểm");
           document.getElementById('detail-modal').classList.add('hidden');
           modalOverlay.classList.add('hidden');
           currentActiveNoteId = null;
-          renderNotes([]); // Clear map
-          loadNotes(); // Reload public notes
+          loadNotes(); // Reload map
         } catch (e) {
-          showToast("Lá»—i xÃ³a Ä‘á»‹a Ä‘iá»ƒm");
+          showToast("Lỗi xóa địa điểm");
         }
       }
     };
@@ -670,12 +661,12 @@ async function openDetailModal(note) {
           await axios.put(`${API_BASE}/notes/${note.id}`, {
             title, description: desc, address, rating
           });
-          showToast("ÄÃ£ cáº­p nháº­t Ä‘á»‹a Ä‘iá»ƒm!");
+          showToast("Đã cập nhật địa điểm!");
           addNoteModal.classList.add('hidden');
           modalOverlay.classList.add('hidden');
           loadNotes();
         } catch(e) {
-          showToast("Lá»—i cáº­p nháº­t");
+          showToast("Lỗi cập nhật");
         }
       });
     };
@@ -686,12 +677,12 @@ async function openDetailModal(note) {
 
   // Load reviews
   const reviewList = document.getElementById('review-list');
-  reviewList.innerHTML = '<div class="loading-text">Äang táº£i Ä‘Ã¡nh giÃ¡...</div>';
+  reviewList.innerHTML = '<div class="loading-text">Đang tải đánh giá...</div>';
   try {
     const res = await axios.get(`${API_BASE}/notes/${note.id}/reviews`);
     const reviews = res.data;
     if (reviews.length === 0) {
-      reviewList.innerHTML = '<div class="loading-text" style="text-align:left; padding: 10px 0;">ChÆ°a cÃ³ Ä‘Ã¡nh giÃ¡ nÃ o. HÃ£y lÃ  ngÆ°á»i Ä‘áº§u tiÃªn!</div>';
+      reviewList.innerHTML = '<div class="loading-text" style="text-align:left; padding: 10px 0;">Chưa có đánh giá nào. Hãy là người đầu tiên!</div>';
     } else {
       reviewList.innerHTML = reviews.map(r => {
         let imgs = '';
@@ -705,7 +696,7 @@ async function openDetailModal(note) {
         }
         let deleteReviewBtn = '';
         if (currentUser && currentUser.uid === r.userId) {
-          deleteReviewBtn = `<button class="btn-text delete-review-btn" data-id="${r.id}" style="color:var(--danger); padding:0; font-size:12px;">XÃ³a</button>`;
+          deleteReviewBtn = `<button class="btn-text delete-review-btn" data-id="${r.id}" style="color:var(--danger); padding:0; font-size:12px;">Xóa</button>`;
         }
         
         return `
@@ -727,136 +718,22 @@ async function openDetailModal(note) {
       document.querySelectorAll('.delete-review-btn').forEach(btn => {
         btn.addEventListener('click', async (e) => {
           const id = e.target.getAttribute('data-id');
-          if (confirm("Báº¡n cÃ³ cháº¯c muá»‘n xÃ³a Ä‘Ã¡nh giÃ¡ nÃ y?")) {
+          if (confirm("Bạn có chắc muốn xóa đánh giá này?")) {
             try {
               await axios.delete(`${API_BASE}/reviews/${id}`);
-              showToast("ÄÃ£ xÃ³a Ä‘Ã¡nh giÃ¡!");
+              showToast("Đã xóa đánh giá!");
               openDetailModal(allNotesData.find(n => n.id === currentActiveNoteId)); // Reload reviews
             } catch(e) {
-              showToast("Lá»—i xÃ³a Ä‘Ã¡nh giÃ¡");
+              showToast("Lỗi xóa đánh giá");
             }
           }
         });
       });
     }
   } catch (e) {
-    reviewList.innerHTML = '<div class="loading-text">Lá»—i táº£i Ä‘Ã¡nh giÃ¡</div>';
+    reviewList.innerHTML = '<div class="loading-text">Lỗi tải đánh giá</div>';
   }
 }
 
 // Load Notes
 loadNotes();
-
-// =======================
-// Bottom Navigation & Feed
-// =======================
-const navItems = document.querySelectorAll('.nav-item');
-navItems.forEach(item => {
-  item.addEventListener('click', (e) => {
-    e.preventDefault();
-    const targetTab = e.currentTarget.getAttribute('data-tab');
-    
-    // Update active class
-    navItems.forEach(nav => nav.classList.remove('active'));
-    e.currentTarget.classList.add('active');
-    
-    // Manage Views
-    document.getElementById('map').style.display = targetTab === 'map' ? 'block' : 'none';
-    document.getElementById('floating-header').style.display = targetTab === 'map' ? 'flex' : 'none';
-    const fabs = document.querySelectorAll('.fab');
-    fabs.forEach(fab => fab.style.display = targetTab === 'map' ? 'flex' : 'none');
-    document.getElementById('bottom-sheet').style.display = targetTab === 'map' ? 'block' : 'none';
-    
-    document.getElementById('feed-view').classList.toggle('hidden', targetTab !== 'feed');
-    document.getElementById('saved-view').classList.toggle('hidden', targetTab !== 'saved');
-    document.getElementById('profile-view').classList.toggle('hidden', targetTab !== 'profile');
-    
-    if (targetTab === 'feed') {
-      loadFeed();
-    }
-  });
-});
-
-async function loadFeed() {
-  const feedList = document.getElementById('feed-list');
-  feedList.innerHTML = '<div class="loading-text">Äang táº£i báº£ng tin...</div>';
-  try {
-    const res = await axios.get(`${API_BASE}/feed`);
-    const notes = res.data;
-    if (notes.length === 0) {
-      feedList.innerHTML = '<div style="text-align:center; color:gray; padding:20px;">ChÆ°a cÃ³ bÃ i Ä‘Äƒng nÃ o.</div>';
-      return;
-    }
-    feedList.innerHTML = notes.map(note => {
-      let imgTag = '';
-      if (note.imageUrl) {
-        try {
-          const urls = JSON.parse(note.imageUrl);
-          if (urls.length > 0) imgTag = `<img class="feed-image" src="${API_BASE.replace('/api', '')}${urls[0]}" alt="food">`;
-        } catch(e) {}
-      }
-      return `
-        <div class="feed-card">
-          <div class="feed-header">
-            <img class="feed-avatar" src="${note.userAvatar || 'https://via.placeholder.com/32'}" alt="avatar">
-            <div style="display:flex; flex-direction:column;">
-              <span class="feed-name">${note.userName || 'NgÆ°á»i dÃ¹ng áº©n danh'}</span>
-              <span style="font-size:0.8rem; color:var(--text-muted);">${new Date(note.createdAt).toLocaleDateString()}</span>
-            </div>
-          </div>
-          <div style="font-weight:bold; font-size:1.1rem; margin-bottom:4px;">${note.title}</div>
-          <div style="font-size:0.95rem; color:var(--text-color); margin-bottom:8px;">${note.description || ''}</div>
-          ${imgTag}
-          <div class="feed-actions">
-            <button class="feed-action-btn like-btn" data-id="${note.id}" data-type="note">
-              â¤ï¸ <span class="like-count">${note.likeCount || 0}</span>
-            </button>
-            <button class="feed-action-btn" onclick="openDetailModalFromFeed('${note.id}')">
-              ðŸ’¬ BÃ¬nh luáº­n
-            </button>
-          </div>
-        </div>
-      `;
-    }).join('');
-    
-    // Attach like events
-    document.querySelectorAll('.like-btn').forEach(btn => {
-      btn.addEventListener('click', async (e) => {
-        if (!currentUser) {
-          showToast("Vui lÃ²ng Ä‘Äƒng nháº­p Ä‘á»ƒ thÃ­ch");
-          return;
-        }
-        const targetId = e.currentTarget.getAttribute('data-id');
-        const targetType = e.currentTarget.getAttribute('data-type');
-        try {
-          const res = await axios.post(`${API_BASE}/likes/toggle`, {
-            userId: currentUser.uid, targetType, targetId
-          });
-          const countSpan = e.currentTarget.querySelector('.like-count');
-          let count = parseInt(countSpan.textContent);
-          if (res.data.action === 'liked') countSpan.textContent = count + 1;
-          else countSpan.textContent = count > 0 ? count - 1 : 0;
-        } catch(err) {}
-      });
-    });
-  } catch (err) {
-    feedList.innerHTML = '<div class="loading-text">Lá»—i táº£i báº£ng tin</div>';
-  }
-}
-
-window.openDetailModalFromFeed = (noteId) => {
-  const note = allNotesData.find(n => n.id === noteId);
-  if (note) openDetailModal(note);
-};
-
-window.searchByTag = (tag) => {
-  if (tag === 'clear') {
-    renderNotes(allNotesData);
-    return;
-  }
-  const filtered = allNotesData.filter(note => {
-    return note.description && note.description.toLowerCase().includes(tag.toLowerCase());
-  });
-  renderNotes(filtered);
-  showToast("Tï¿½m th?y  d?a di?m");
-};

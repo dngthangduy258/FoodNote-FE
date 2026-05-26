@@ -603,7 +603,7 @@ input:checked + .toggle-switch:before {
 /* Views */
 .view-container { display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: #f8f9fa; z-index: 100; overflow-y: auto; }
 .view-container:not(.hidden) { display: block; }
-#map { position: absolute; top: 0; left: 0; right: 0; bottom: 60px; z-index: 1; width: 100%; height: auto; }
+#map-container { position: absolute; top: 0; left: 0; right: 0; bottom: 60px; z-index: 1; }
 .feed-card { background: white; border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
 .feed-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
 .feed-avatar { width: 32px; height: 32px; border-radius: 50%; }

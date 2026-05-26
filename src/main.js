@@ -778,12 +778,12 @@ navItems.forEach(item => {
 
 async function loadFeed() {
   const feedList = document.getElementById('feed-list');
-  feedList.innerHTML = '<div class="loading-text">�ang t?i b?ng tin...</div>';
+  feedList.innerHTML = '<div class="loading-text">Đang tải bảng tin...</div>';
   try {
-    const res = await axios.get(${API_BASE}/feed);
+    const res = await axios.get(`${API_BASE}/feed`);
     const notes = res.data;
     if (notes.length === 0) {
-      feedList.innerHTML = '<div style="text-align:center; color:gray; padding:20px;">Chua c� b�i dang n�o.</div>';
+      feedList.innerHTML = '<div style="text-align:center; color:gray; padding:20px;">Chưa có bài đăng nào.</div>';
       return;
     }
     feedList.innerHTML = notes.map(note => {
@@ -791,43 +791,44 @@ async function loadFeed() {
       if (note.imageUrl) {
         try {
           const urls = JSON.parse(note.imageUrl);
-          if (urls.length > 0) imgTag = <img class="feed-image" src="" alt="food">;
+          if (urls.length > 0) imgTag = `<img class="feed-image" src="${API_BASE.replace('/api', '')}${urls[0]}" alt="food">`;
         } catch(e) {}
       }
-      return \`n        <div class="feed-card">
+      return `
+        <div class="feed-card">
           <div class="feed-header">
-            <img class="feed-avatar" src="" alt="avatar">
+            <img class="feed-avatar" src="${note.userAvatar || 'https://via.placeholder.com/32'}" alt="avatar">
             <div style="display:flex; flex-direction:column;">
-              <span class="feed-name"></span>
-              <span style="font-size:0.8rem; color:var(--text-muted);"></span>
+              <span class="feed-name">${note.userName || 'Người dùng ẩn danh'}</span>
+              <span style="font-size:0.8rem; color:var(--text-muted);">${new Date(note.createdAt).toLocaleDateString()}</span>
             </div>
           </div>
-          <div style="font-weight:bold; font-size:1.1rem; margin-bottom:4px;"></div>
-          <div style="font-size:0.95rem; color:var(--text-color); margin-bottom:8px;"></div>
-          
+          <div style="font-weight:bold; font-size:1.1rem; margin-bottom:4px;">${note.title}</div>
+          <div style="font-size:0.95rem; color:var(--text-color); margin-bottom:8px;">${note.description || ''}</div>
+          ${imgTag}
           <div class="feed-actions">
-            <button class="feed-action-btn like-btn" data-id="" data-type="note">
-              ?? <span class="like-count"></span>
+            <button class="feed-action-btn like-btn" data-id="${note.id}" data-type="note">
+              ❤️ <span class="like-count">${note.likeCount || 0}</span>
             </button>
-            <button class="feed-action-btn" onclick="openDetailModalFromFeed('')">
-              ?? B�nh lu?n
+            <button class="feed-action-btn" onclick="openDetailModalFromFeed('${note.id}')">
+              💬 Bình luận
             </button>
           </div>
         </div>
-      \;
+      `;
     }).join('');
     
     // Attach like events
     document.querySelectorAll('.like-btn').forEach(btn => {
       btn.addEventListener('click', async (e) => {
         if (!currentUser) {
-          showToast("Vui l�ng dang nh?p d? th�ch");
+          showToast("Vui lòng đăng nhập để thích");
           return;
         }
         const targetId = e.currentTarget.getAttribute('data-id');
         const targetType = e.currentTarget.getAttribute('data-type');
         try {
-          const res = await axios.post(${API_BASE}/likes/toggle, {
+          const res = await axios.post(`${API_BASE}/likes/toggle`, {
             userId: currentUser.uid, targetType, targetId
           });
           const countSpan = e.currentTarget.querySelector('.like-count');
@@ -838,7 +839,7 @@ async function loadFeed() {
       });
     });
   } catch (err) {
-    feedList.innerHTML = '<div class="loading-text">L?i t?i b?ng tin</div>';
+    feedList.innerHTML = '<div class="loading-text">Lỗi tải bảng tin</div>';
   }
 }
 

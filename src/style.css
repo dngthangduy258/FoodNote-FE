@@ -590,3 +590,6 @@ input:checked + .toggle-switch:before {
   color: var(--text-muted);
   margin-left: auto;
 }
+
+.star-rating { font-size: 1.5rem; color: #dadce0; cursor: pointer; user-select: none; }
+.star-rating span.active { color: var(--star); }

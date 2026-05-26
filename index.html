@@ -43,6 +43,10 @@
     <button class="fab" id="add-btn">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
     </button>
+    
+    <button class="fab" id="gps-btn" style="bottom: 96px; background: white; color: var(--primary);">
+      📍
+    </button>
 
     <!-- Bottom Sheet for Notes List -->
     <div id="bottom-sheet" class="bottom-sheet">
@@ -91,6 +95,12 @@
         <div class="form-group">
           <input type="text" id="add-address" placeholder="Địa chỉ chi tiết (Tùy chọn)" class="input-field" autocomplete="off" />
         </div>
+        <div class="form-group" style="display: flex; gap: 8px; align-items: center;">
+          <span style="font-size: 0.9rem; color: var(--text-muted);">Đánh giá:</span>
+          <div id="add-rating-stars" class="star-rating" data-rating="5">
+            <span data-val="1" class="active">★</span><span data-val="2" class="active">★</span><span data-val="3" class="active">★</span><span data-val="4" class="active">★</span><span data-val="5" class="active">★</span>
+          </div>
+        </div>
         <div class="form-group">
           <textarea id="add-desc" placeholder="Trải nghiệm của bạn..." class="input-field textarea"></textarea>
         </div>
@@ -117,8 +127,12 @@
       <!-- Detail Modal -->
       <div id="detail-modal" class="modal hidden" style="max-height: 85vh; overflow-y: auto;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-          <h2 class="modal-title" id="detail-title" style="margin-bottom:0;"></h2>
-          <button id="btn-close-detail" class="btn-text" style="padding: 4px 8px;">✕</button>
+          <h2 class="modal-title" id="detail-title" style="margin-bottom:0; flex: 1;"></h2>
+          <div style="display: flex; gap: 4px;">
+            <button id="btn-edit-note" class="btn-text hidden" style="padding: 4px; font-size: 0.9rem; color: var(--text-muted);">✏️</button>
+            <button id="btn-delete-note" class="btn-text hidden" style="padding: 4px; font-size: 0.9rem; color: var(--danger);">🗑️</button>
+            <button id="btn-close-detail" class="btn-text" style="padding: 4px 8px;">✕</button>
+          </div>
         </div>
         <p class="modal-subtitle" id="detail-address"></p>
         
@@ -133,6 +147,12 @@
           <button id="btn-open-review-form" class="btn-secondary" style="width: 100%;">🖊️ Viết đánh giá</button>
           
           <div id="add-review-form" class="hidden" style="margin-top: 12px; display: flex; flex-direction: column; gap: 8px;">
+            <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 4px;">
+              <span style="font-size: 0.9rem; color: var(--text-muted);">Đánh giá:</span>
+              <div id="review-rating-stars" class="star-rating" data-rating="5">
+                <span data-val="1" class="active">★</span><span data-val="2" class="active">★</span><span data-val="3" class="active">★</span><span data-val="4" class="active">★</span><span data-val="5" class="active">★</span>
+              </div>
+            </div>
             <textarea id="review-comment" placeholder="Bạn thấy quán này thế nào?" class="input-field textarea"></textarea>
             
             <label for="review-image" class="image-upload-label">

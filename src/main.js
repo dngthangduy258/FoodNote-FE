@@ -136,6 +136,33 @@ document.getElementById('btn-cancel-pin').addEventListener('click', () => {
   }
 });
 
+// GPS Location tracking
+const gpsBtn = document.getElementById('gps-btn');
+if (gpsBtn) {
+  gpsBtn.addEventListener('click', () => {
+    if (navigator.geolocation) {
+      showToast("Đang tìm vị trí...");
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          map.flyTo([lat, lng], 16);
+          L.popup()
+            .setLatLng([lat, lng])
+            .setContent("Bạn đang ở đây")
+            .openOn(map);
+        },
+        () => {
+          showToast("Không thể định vị. Vui lòng bật GPS.");
+        },
+        { enableHighAccuracy: true, timeout: 5000 }
+      );
+    } else {
+      showToast("Trình duyệt không hỗ trợ định vị.");
+    }
+  });
+}
+
 document.getElementById('btn-confirm-pin').addEventListener('click', async () => {
   const center = map.getCenter();
   selectedLat = center.lat;
@@ -359,6 +386,28 @@ async function loadNotes() {
   }
 }
 
+// Star Rating Logic
+function setupStarRating(containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  const stars = container.querySelectorAll('span');
+  stars.forEach(star => {
+    star.addEventListener('click', (e) => {
+      const val = parseInt(e.target.getAttribute('data-val'));
+      container.setAttribute('data-rating', val);
+      stars.forEach(s => {
+        if (parseInt(s.getAttribute('data-val')) <= val) {
+          s.classList.add('active');
+        } else {
+          s.classList.remove('active');
+        }
+      });
+    });
+  });
+}
+setupStarRating('add-rating-stars');
+setupStarRating('review-rating-stars');
+
 // Image Selection
 let selectedImageFiles = [];
 document.getElementById('add-image').addEventListener('change', (e) => {
@@ -415,6 +464,8 @@ document.getElementById('btn-submit-note').addEventListener('click', async () =>
     document.getElementById('btn-submit-note').disabled = false;
   }
   
+  const rating = parseInt(document.getElementById('add-rating-stars').getAttribute('data-rating')) || 5;
+
   const payload = {
     id: Date.now().toString(),
     title,
@@ -424,7 +475,7 @@ document.getElementById('btn-submit-note').addEventListener('click', async () =>
     lat: selectedLat,
     lng: selectedLng,
     userId: currentUser.uid,
-    rating: 5,
+    rating: rating,
     imageUrl
   };
   
@@ -458,6 +509,7 @@ let currentActiveNoteId = null;
 document.getElementById('btn-submit-review').addEventListener('click', async () => {
   if (!currentActiveNoteId || !currentUser) return;
   const comment = document.getElementById('review-comment').value;
+  const reviewRating = parseInt(document.getElementById('review-rating-stars').getAttribute('data-rating')) || 5;
   if (!comment) return showToast("Vui lòng nhập đánh giá");
 
   let imageUrl = null;
@@ -537,6 +589,78 @@ async function openDetailModal(note) {
   document.getElementById('add-review-form').classList.add('hidden');
   document.getElementById('btn-open-review-form').classList.remove('hidden');
 
+  // Edit / Delete Buttons Logic
+  const btnEdit = document.getElementById('btn-edit-note');
+  const btnDelete = document.getElementById('btn-delete-note');
+  
+  if (currentUser && currentUser.uid === note.userId) {
+    btnEdit.classList.remove('hidden');
+    btnDelete.classList.remove('hidden');
+    
+    // Delete Handle
+    btnDelete.onclick = async () => {
+      if (confirm("Bạn có chắc chắn muốn xóa địa điểm này?")) {
+        try {
+          await axios.delete(`${API_BASE}/notes/${note.id}`);
+          showToast("Đã xóa địa điểm");
+          document.getElementById('detail-modal').classList.add('hidden');
+          modalOverlay.classList.add('hidden');
+          currentActiveNoteId = null;
+          loadNotes(); // Reload map
+        } catch (e) {
+          showToast("Lỗi xóa địa điểm");
+        }
+      }
+    };
+    
+    // Edit Handle (Basic implementation: reuse add form)
+    btnEdit.onclick = () => {
+      document.getElementById('detail-modal').classList.add('hidden');
+      addNoteModal.classList.remove('hidden');
+      
+      document.getElementById('add-title').value = note.title;
+      document.getElementById('add-address').value = note.address || '';
+      document.getElementById('add-desc').value = note.description;
+      selectedLat = note.lat;
+      selectedLng = note.lng;
+      
+      // Setting star UI
+      const starsContainer = document.getElementById('add-rating-stars');
+      starsContainer.setAttribute('data-rating', note.rating || 5);
+      starsContainer.querySelectorAll('span').forEach(s => {
+        if (parseInt(s.getAttribute('data-val')) <= (note.rating || 5)) s.classList.add('active');
+        else s.classList.remove('active');
+      });
+      
+      // Override submit button for Edit mode
+      const oldSubmit = document.getElementById('btn-submit-note');
+      const newSubmit = oldSubmit.cloneNode(true);
+      oldSubmit.parentNode.replaceChild(newSubmit, oldSubmit);
+      
+      newSubmit.addEventListener('click', async () => {
+        const title = document.getElementById('add-title').value;
+        const address = document.getElementById('add-address').value;
+        const desc = document.getElementById('add-desc').value;
+        const rating = parseInt(document.getElementById('add-rating-stars').getAttribute('data-rating')) || 5;
+        
+        try {
+          await axios.put(`${API_BASE}/notes/${note.id}`, {
+            title, description: desc, address, rating
+          });
+          showToast("Đã cập nhật địa điểm!");
+          addNoteModal.classList.add('hidden');
+          modalOverlay.classList.add('hidden');
+          loadNotes();
+        } catch(e) {
+          showToast("Lỗi cập nhật");
+        }
+      });
+    };
+  } else {
+    btnEdit.classList.add('hidden');
+    btnDelete.classList.add('hidden');
+  }
+
   // Load reviews
   const reviewList = document.getElementById('review-list');
   reviewList.innerHTML = '<div class="loading-text">Đang tải đánh giá...</div>';
@@ -556,18 +680,41 @@ async function openDetailModal(note) {
             </div>`;
           } catch(e) {}
         }
+        let deleteReviewBtn = '';
+        if (currentUser && currentUser.uid === r.userId) {
+          deleteReviewBtn = `<button class="btn-text delete-review-btn" data-id="${r.id}" style="color:var(--danger); padding:0; font-size:12px;">Xóa</button>`;
+        }
+        
         return `
           <div class="review-card">
             <div class="review-header">
               <img class="review-avatar" src="${r.userAvatar || 'https://via.placeholder.com/24'}">
               <span class="review-name">${r.userName}</span>
               <span class="review-date">${new Date(r.createdAt).toLocaleDateString()}</span>
+              <div style="flex:1;"></div>
+              ${deleteReviewBtn}
             </div>
             <div style="font-size:0.9rem; margin-top:4px;">${r.comment}</div>
             ${imgs}
           </div>
         `;
       }).join('');
+      
+      // Attach events to delete buttons
+      document.querySelectorAll('.delete-review-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          const id = e.target.getAttribute('data-id');
+          if (confirm("Bạn có chắc muốn xóa đánh giá này?")) {
+            try {
+              await axios.delete(`${API_BASE}/reviews/${id}`);
+              showToast("Đã xóa đánh giá!");
+              openDetailModal(allNotesData.find(n => n.id === currentActiveNoteId)); // Reload reviews
+            } catch(e) {
+              showToast("Lỗi xóa đánh giá");
+            }
+          }
+        });
+      });
     }
   } catch (e) {
     reviewList.innerHTML = '<div class="loading-text">Lỗi tải đánh giá</div>';

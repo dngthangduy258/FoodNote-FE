@@ -1,5 +1,5 @@
-import './style.css';
-import L from 'leaflet';
+﻿import './style.css';
+
 import axios from 'axios';
 import { initializeApp } from "firebase/app";
 import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
@@ -41,13 +41,13 @@ map.addLayer(markersCluster);
 // Google Maps Raster Tiles (Default with POIs)
 const googleMapsLayer = L.tileLayer('http://mt0.google.com/vt/lyrs=m&hl=vi&x={x}&y={y}&z={z}', {
   maxZoom: 20,
-  attribution: '© Google Maps'
+  attribution: 'Â© Google Maps'
 });
 
 // Clean Map (CartoDB Voyager - no POIs)
 const cleanMapsLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
   maxZoom: 20,
-  attribution: '© OpenStreetMap, © CartoDB'
+  attribution: 'Â© OpenStreetMap, Â© CartoDB'
 });
 
 googleMapsLayer.addTo(map);
@@ -163,7 +163,7 @@ const gpsBtn = document.getElementById('gps-btn');
 if (gpsBtn) {
   gpsBtn.addEventListener('click', () => {
     if (navigator.geolocation) {
-      showToast("Đang tìm vị trí...");
+      showToast("Äang tÃ¬m vá»‹ trÃ­...");
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const lat = position.coords.latitude;
@@ -171,16 +171,16 @@ if (gpsBtn) {
           map.flyTo([lat, lng], 16);
           L.popup()
             .setLatLng([lat, lng])
-            .setContent("Bạn đang ở đây")
+            .setContent("Báº¡n Ä‘ang á»Ÿ Ä‘Ã¢y")
             .openOn(map);
         },
         () => {
-          showToast("Không thể định vị. Vui lòng bật GPS.");
+          showToast("KhÃ´ng thá»ƒ Ä‘á»‹nh vá»‹. Vui lÃ²ng báº­t GPS.");
         },
         { enableHighAccuracy: true, timeout: 5000 }
       );
     } else {
-      showToast("Trình duyệt không hỗ trợ định vị.");
+      showToast("TrÃ¬nh duyá»‡t khÃ´ng há»— trá»£ Ä‘á»‹nh vá»‹.");
     }
   });
 }
@@ -202,7 +202,7 @@ document.getElementById('btn-confirm-pin').addEventListener('click', async () =>
   addNoteModal.classList.remove('hidden');
   
   // Auto-fill address via Nominatim Reverse Geocoding
-  document.getElementById('add-address').value = 'Đang tự động lấy địa chỉ...';
+  document.getElementById('add-address').value = 'Äang tá»± Ä‘á»™ng láº¥y Ä‘á»‹a chá»‰...';
   try {
     const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${selectedLat}&lon=${selectedLng}`);
     const data = await res.json();
@@ -234,10 +234,10 @@ if (searchInput) {
             startPinSelector();
           }
         } else {
-          showToast("Không tìm thấy địa điểm này!");
+          showToast("KhÃ´ng tÃ¬m tháº¥y Ä‘á»‹a Ä‘iá»ƒm nÃ y!");
         }
       } catch (err) {
-        showToast("Lỗi tìm kiếm");
+        showToast("Lá»—i tÃ¬m kiáº¿m");
       }
     }
   });
@@ -267,7 +267,7 @@ document.getElementById('btn-login-google').addEventListener('click', async () =
       });
     } catch(e) {}
     
-    showToast(`Xin chào ${currentUser.displayName}`);
+    showToast(`Xin chÃ o ${currentUser.displayName}`);
     loginModal.classList.add('hidden');
     modalOverlay.classList.add('hidden'); // Hide overlay completely
     
@@ -285,19 +285,19 @@ document.getElementById('btn-login-google').addEventListener('click', async () =
       avatarDiv.innerHTML = `<img src="${currentUser.photoURL}" alt="avatar">`;
     }
   } catch (error) {
-    showToast("Đăng nhập thất bại");
+    showToast("ÄÄƒng nháº­p tháº¥t báº¡i");
   }
 });
 
 // Login / Logout Avatar Click
 document.getElementById('user-avatar').addEventListener('click', async () => {
   if (currentUser) {
-    if (confirm("Bạn có muốn đăng xuất và xóa dữ liệu cục bộ không?")) {
+    if (confirm("Báº¡n cÃ³ muá»‘n Ä‘Äƒng xuáº¥t vÃ  xÃ³a dá»¯ liá»‡u cá»¥c bá»™ khÃ´ng?")) {
       await auth.signOut();
       localStorage.removeItem('foodnote_offline_data');
       localStorage.removeItem('foodnote_user');
-      showToast("Đã đăng xuất và xóa dữ liệu cục bộ");
-      document.getElementById('user-avatar').innerHTML = '👤';
+      showToast("ÄÃ£ Ä‘Äƒng xuáº¥t vÃ  xÃ³a dá»¯ liá»‡u cá»¥c bá»™");
+      document.getElementById('user-avatar').innerHTML = 'ðŸ‘¤';
       document.getElementById('toggle-my-notes').checked = false;
       loadNotes(); // Reload to show public notes
     }
@@ -339,7 +339,7 @@ function renderNotes(notes = []) {
     : allNotesData;
 
   if (notesToRender.length === 0) {
-    listEl.innerHTML = '<div class="loading-text" style="text-align:center; padding: 20px;">Không có địa điểm nào.</div>';
+    listEl.innerHTML = '<div class="loading-text" style="text-align:center; padding: 20px;">KhÃ´ng cÃ³ Ä‘á»‹a Ä‘iá»ƒm nÃ o.</div>';
     return;
   }
 
@@ -347,8 +347,8 @@ function renderNotes(notes = []) {
     const marker = L.marker([note.lat, note.lng]).bindPopup(`
       <div style="font-family: 'Inter', sans-serif; min-width: 150px; text-align: left;">
         <h4 style="margin: 0 0 4px 0; color: #1a73e8; font-size: 14px; font-weight: 600;">${note.title}</h4>
-        ${note.address ? `<p style="margin: 0 0 6px 0; font-size: 11px; color: #5f6368;">📍 ${note.address}</p>` : ''}
-        <div style="font-size: 12px; font-weight: 500; color: #fbbc04;">⭐ ${note.rating?.toFixed(1) || '5.0'}</div>
+        ${note.address ? `<p style="margin: 0 0 6px 0; font-size: 11px; color: #5f6368;">ðŸ“ ${note.address}</p>` : ''}
+        <div style="font-size: 12px; font-weight: 500; color: #fbbc04;">â­ ${note.rating?.toFixed(1) || '5.0'}</div>
       </div>
     `);
     marker.on('click', () => openDetailModal(note));
@@ -369,13 +369,13 @@ function renderNotes(notes = []) {
     el.innerHTML = `
       <div class="note-header">
         <div class="note-title">${note.title}</div>
-        <div class="note-rating">⭐ ${note.rating?.toFixed(1) || '5.0'}</div>
+        <div class="note-rating">â­ ${note.rating?.toFixed(1) || '5.0'}</div>
       </div>
       <div class="note-desc">${note.description}</div>
       ${imgTag}
       <div class="action-buttons">
-        <a href="https://www.google.com/maps/search/?api=1&query=${note.lat},${note.lng}" target="_blank" class="nav-btn">📍 Google Maps</a>
-        <a href="http://maps.apple.com/?ll=${note.lat},${note.lng}&q=${note.title}" target="_blank" class="nav-btn">🍎 Apple Maps</a>
+        <a href="https://www.google.com/maps/search/?api=1&query=${note.lat},${note.lng}" target="_blank" class="nav-btn">ðŸ“ Google Maps</a>
+        <a href="http://maps.apple.com/?ll=${note.lat},${note.lng}&q=${note.title}" target="_blank" class="nav-btn">ðŸŽ Apple Maps</a>
       </div>
     `;
 
@@ -434,7 +434,7 @@ let selectedImageFiles = [];
 document.getElementById('add-image').addEventListener('change', (e) => {
   if (e.target.files) {
     selectedImageFiles = Array.from(e.target.files);
-    document.getElementById('upload-text').textContent = `Đã chọn: ${selectedImageFiles.length} ảnh`;
+    document.getElementById('upload-text').textContent = `ÄÃ£ chá»n: ${selectedImageFiles.length} áº£nh`;
   }
 });
 
@@ -442,7 +442,7 @@ let selectedReviewFiles = [];
 document.getElementById('review-image').addEventListener('change', (e) => {
   if (e.target.files) {
     selectedReviewFiles = Array.from(e.target.files);
-    document.getElementById('review-upload-text').textContent = `Đã chọn: ${selectedReviewFiles.length} ảnh`;
+    document.getElementById('review-upload-text').textContent = `ÄÃ£ chá»n: ${selectedReviewFiles.length} áº£nh`;
   }
 });
 
@@ -467,21 +467,21 @@ document.getElementById('btn-submit-note').addEventListener('click', async () =>
   const privacy = document.getElementById('add-privacy').checked;
   
   if (!title || !desc) {
-    showToast("Vui lòng nhập Tên và Đánh giá");
+    showToast("Vui lÃ²ng nháº­p TÃªn vÃ  ÄÃ¡nh giÃ¡");
     return;
   }
 
   let imageUrl = null;
   if (selectedImageFiles.length > 0) {
-    document.getElementById('btn-submit-note').textContent = "Đang tải ảnh...";
+    document.getElementById('btn-submit-note').textContent = "Äang táº£i áº£nh...";
     document.getElementById('btn-submit-note').disabled = true;
     try {
       const urls = await uploadFiles(selectedImageFiles);
       imageUrl = JSON.stringify(urls);
     } catch (e) {
-      showToast("Lỗi tải ảnh lên");
+      showToast("Lá»—i táº£i áº£nh lÃªn");
     }
-    document.getElementById('btn-submit-note').textContent = "Lưu lại";
+    document.getElementById('btn-submit-note').textContent = "LÆ°u láº¡i";
     document.getElementById('btn-submit-note').disabled = false;
   }
   
@@ -505,15 +505,15 @@ document.getElementById('btn-submit-note').addEventListener('click', async () =>
   document.getElementById('add-address').value = '';
   document.getElementById('add-desc').value = '';
   document.getElementById('add-image').value = '';
-  document.getElementById('upload-text').textContent = "Thêm ảnh (Tùy chọn)";
+  document.getElementById('upload-text').textContent = "ThÃªm áº£nh (TÃ¹y chá»n)";
   selectedImageFiles = [];
 
   try {
     const res = await axios.post(`${API_BASE}/notes`, payload);
-    showToast(res.data.message || "Đã lưu địa điểm thành công!");
+    showToast(res.data.message || "ÄÃ£ lÆ°u Ä‘á»‹a Ä‘iá»ƒm thÃ nh cÃ´ng!");
     loadNotes();
   } catch (err) {
-    showToast("Đã lưu cục bộ (Chờ đồng bộ Backend)");
+    showToast("ÄÃ£ lÆ°u cá»¥c bá»™ (Chá» Ä‘á»“ng bá»™ Backend)");
     
     // Save to local storage for offline usage
     const localNotes = JSON.parse(localStorage.getItem('foodnote_offline_data') || '[]');
@@ -531,17 +531,17 @@ document.getElementById('btn-submit-review').addEventListener('click', async () 
   if (!currentActiveNoteId || !currentUser) return;
   const comment = document.getElementById('review-comment').value;
   const reviewRating = parseInt(document.getElementById('review-rating-stars').getAttribute('data-rating')) || 5;
-  if (!comment) return showToast("Vui lòng nhập đánh giá");
+  if (!comment) return showToast("Vui lÃ²ng nháº­p Ä‘Ã¡nh giÃ¡");
 
   let imageUrl = null;
   if (selectedReviewFiles.length > 0) {
-    document.getElementById('btn-submit-review').textContent = "Đang tải ảnh...";
+    document.getElementById('btn-submit-review').textContent = "Äang táº£i áº£nh...";
     document.getElementById('btn-submit-review').disabled = true;
     try {
       const urls = await uploadFiles(selectedReviewFiles);
       imageUrl = JSON.stringify(urls);
     } catch (e) {}
-    document.getElementById('btn-submit-review').textContent = "Gửi đánh giá";
+    document.getElementById('btn-submit-review').textContent = "Gá»­i Ä‘Ã¡nh giÃ¡";
     document.getElementById('btn-submit-review').disabled = false;
   }
 
@@ -552,21 +552,21 @@ document.getElementById('btn-submit-review').addEventListener('click', async () 
       comment,
       imageUrl
     });
-    showToast("Đã thêm đánh giá!");
+    showToast("ÄÃ£ thÃªm Ä‘Ã¡nh giÃ¡!");
     document.getElementById('review-comment').value = '';
     document.getElementById('review-image').value = '';
-    document.getElementById('review-upload-text').textContent = "Thêm ảnh";
+    document.getElementById('review-upload-text').textContent = "ThÃªm áº£nh";
     selectedReviewFiles = [];
     document.getElementById('add-review-form').classList.add('hidden');
     document.getElementById('btn-open-review-form').classList.remove('hidden');
     openDetailModal(allNotesData.find(n => n.id === currentActiveNoteId));
   } catch (e) {
-    showToast("Lỗi thêm đánh giá");
+    showToast("Lá»—i thÃªm Ä‘Ã¡nh giÃ¡");
   }
 });
 
 document.getElementById('btn-open-review-form').addEventListener('click', () => {
-  if (!currentUser) return showToast("Vui lòng đăng nhập để đánh giá");
+  if (!currentUser) return showToast("Vui lÃ²ng Ä‘Äƒng nháº­p Ä‘á»ƒ Ä‘Ã¡nh giÃ¡");
   document.getElementById('btn-open-review-form').classList.add('hidden');
   document.getElementById('add-review-form').classList.remove('hidden');
 });
@@ -620,17 +620,17 @@ async function openDetailModal(note) {
     
     // Delete Handle
     btnDelete.onclick = async () => {
-      if (confirm("Bạn có chắc chắn muốn xóa địa điểm này?")) {
+      if (confirm("Báº¡n cÃ³ cháº¯c cháº¯n muá»‘n xÃ³a Ä‘á»‹a Ä‘iá»ƒm nÃ y?")) {
         try {
           await axios.delete(`${API_BASE}/notes/${note.id}`);
-          showToast("Đã xóa địa điểm");
+          showToast("ÄÃ£ xÃ³a Ä‘á»‹a Ä‘iá»ƒm");
           document.getElementById('detail-modal').classList.add('hidden');
           modalOverlay.classList.add('hidden');
           currentActiveNoteId = null;
           renderNotes([]); // Clear map
           loadNotes(); // Reload public notes
         } catch (e) {
-          showToast("Lỗi xóa địa điểm");
+          showToast("Lá»—i xÃ³a Ä‘á»‹a Ä‘iá»ƒm");
         }
       }
     };
@@ -669,12 +669,12 @@ async function openDetailModal(note) {
           await axios.put(`${API_BASE}/notes/${note.id}`, {
             title, description: desc, address, rating
           });
-          showToast("Đã cập nhật địa điểm!");
+          showToast("ÄÃ£ cáº­p nháº­t Ä‘á»‹a Ä‘iá»ƒm!");
           addNoteModal.classList.add('hidden');
           modalOverlay.classList.add('hidden');
           loadNotes();
         } catch(e) {
-          showToast("Lỗi cập nhật");
+          showToast("Lá»—i cáº­p nháº­t");
         }
       });
     };
@@ -685,12 +685,12 @@ async function openDetailModal(note) {
 
   // Load reviews
   const reviewList = document.getElementById('review-list');
-  reviewList.innerHTML = '<div class="loading-text">Đang tải đánh giá...</div>';
+  reviewList.innerHTML = '<div class="loading-text">Äang táº£i Ä‘Ã¡nh giÃ¡...</div>';
   try {
     const res = await axios.get(`${API_BASE}/notes/${note.id}/reviews`);
     const reviews = res.data;
     if (reviews.length === 0) {
-      reviewList.innerHTML = '<div class="loading-text" style="text-align:left; padding: 10px 0;">Chưa có đánh giá nào. Hãy là người đầu tiên!</div>';
+      reviewList.innerHTML = '<div class="loading-text" style="text-align:left; padding: 10px 0;">ChÆ°a cÃ³ Ä‘Ã¡nh giÃ¡ nÃ o. HÃ£y lÃ  ngÆ°á»i Ä‘áº§u tiÃªn!</div>';
     } else {
       reviewList.innerHTML = reviews.map(r => {
         let imgs = '';
@@ -704,7 +704,7 @@ async function openDetailModal(note) {
         }
         let deleteReviewBtn = '';
         if (currentUser && currentUser.uid === r.userId) {
-          deleteReviewBtn = `<button class="btn-text delete-review-btn" data-id="${r.id}" style="color:var(--danger); padding:0; font-size:12px;">Xóa</button>`;
+          deleteReviewBtn = `<button class="btn-text delete-review-btn" data-id="${r.id}" style="color:var(--danger); padding:0; font-size:12px;">XÃ³a</button>`;
         }
         
         return `
@@ -726,20 +726,20 @@ async function openDetailModal(note) {
       document.querySelectorAll('.delete-review-btn').forEach(btn => {
         btn.addEventListener('click', async (e) => {
           const id = e.target.getAttribute('data-id');
-          if (confirm("Bạn có chắc muốn xóa đánh giá này?")) {
+          if (confirm("Báº¡n cÃ³ cháº¯c muá»‘n xÃ³a Ä‘Ã¡nh giÃ¡ nÃ y?")) {
             try {
               await axios.delete(`${API_BASE}/reviews/${id}`);
-              showToast("Đã xóa đánh giá!");
+              showToast("ÄÃ£ xÃ³a Ä‘Ã¡nh giÃ¡!");
               openDetailModal(allNotesData.find(n => n.id === currentActiveNoteId)); // Reload reviews
             } catch(e) {
-              showToast("Lỗi xóa đánh giá");
+              showToast("Lá»—i xÃ³a Ä‘Ã¡nh giÃ¡");
             }
           }
         });
       });
     }
   } catch (e) {
-    reviewList.innerHTML = '<div class="loading-text">Lỗi tải đánh giá</div>';
+    reviewList.innerHTML = '<div class="loading-text">Lá»—i táº£i Ä‘Ã¡nh giÃ¡</div>';
   }
 }
 
@@ -778,12 +778,12 @@ navItems.forEach(item => {
 
 async function loadFeed() {
   const feedList = document.getElementById('feed-list');
-  feedList.innerHTML = '<div class="loading-text">Đang tải bảng tin...</div>';
+  feedList.innerHTML = '<div class="loading-text">Äang táº£i báº£ng tin...</div>';
   try {
     const res = await axios.get(`${API_BASE}/feed`);
     const notes = res.data;
     if (notes.length === 0) {
-      feedList.innerHTML = '<div style="text-align:center; color:gray; padding:20px;">Chưa có bài đăng nào.</div>';
+      feedList.innerHTML = '<div style="text-align:center; color:gray; padding:20px;">ChÆ°a cÃ³ bÃ i Ä‘Äƒng nÃ o.</div>';
       return;
     }
     feedList.innerHTML = notes.map(note => {
@@ -799,7 +799,7 @@ async function loadFeed() {
           <div class="feed-header">
             <img class="feed-avatar" src="${note.userAvatar || 'https://via.placeholder.com/32'}" alt="avatar">
             <div style="display:flex; flex-direction:column;">
-              <span class="feed-name">${note.userName || 'Người dùng ẩn danh'}</span>
+              <span class="feed-name">${note.userName || 'NgÆ°á»i dÃ¹ng áº©n danh'}</span>
               <span style="font-size:0.8rem; color:var(--text-muted);">${new Date(note.createdAt).toLocaleDateString()}</span>
             </div>
           </div>
@@ -808,10 +808,10 @@ async function loadFeed() {
           ${imgTag}
           <div class="feed-actions">
             <button class="feed-action-btn like-btn" data-id="${note.id}" data-type="note">
-              ❤️ <span class="like-count">${note.likeCount || 0}</span>
+              â¤ï¸ <span class="like-count">${note.likeCount || 0}</span>
             </button>
             <button class="feed-action-btn" onclick="openDetailModalFromFeed('${note.id}')">
-              💬 Bình luận
+              ðŸ’¬ BÃ¬nh luáº­n
             </button>
           </div>
         </div>
@@ -822,7 +822,7 @@ async function loadFeed() {
     document.querySelectorAll('.like-btn').forEach(btn => {
       btn.addEventListener('click', async (e) => {
         if (!currentUser) {
-          showToast("Vui lòng đăng nhập để thích");
+          showToast("Vui lÃ²ng Ä‘Äƒng nháº­p Ä‘á»ƒ thÃ­ch");
           return;
         }
         const targetId = e.currentTarget.getAttribute('data-id');
@@ -839,7 +839,7 @@ async function loadFeed() {
       });
     });
   } catch (err) {
-    feedList.innerHTML = '<div class="loading-text">Lỗi tải bảng tin</div>';
+    feedList.innerHTML = '<div class="loading-text">Lá»—i táº£i báº£ng tin</div>';
   }
 }
 
@@ -857,5 +857,5 @@ window.searchByTag = (tag) => {
     return note.description && note.description.toLowerCase().includes(tag.toLowerCase());
   });
   renderNotes(filtered);
-  showToast("T�m th?y  d?a di?m");
+  showToast("Tï¿½m th?y  d?a di?m");
 };
